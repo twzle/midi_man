@@ -2,7 +2,7 @@ package main
 
 type NotePushed struct {
 	keyCode  int `hubman:"key_code"`
-	velocity int
+	velocity int `hubman:"velocity"`
 }
 
 func (c NotePushed) Code() string {
@@ -15,7 +15,7 @@ func (c NotePushed) Description() string {
 
 type NoteHold struct {
 	keyCode  int `hubman:"key_code"`
-	velocity int
+	velocity int `hubman:"velocity"`
 }
 
 func (c NoteHold) Code() string {
@@ -28,7 +28,7 @@ func (c NoteHold) Description() string {
 
 type NoteReleased struct {
 	keyCode  int `hubman:"key_code"`
-	velocity int
+	velocity int `hubman:"velocity"`
 }
 
 func (c NoteReleased) Code() string {
@@ -43,7 +43,7 @@ func (c NoteReleased) Description() string {
 // поэтому длительность и конец нажатия здесь не отслеживаются
 type ControlPushed struct {
 	keyCode int `hubman:"key_code"`
-	value   int
+	value   int `hubman:"velocity"`
 }
 
 func (c ControlPushed) Code() string {
