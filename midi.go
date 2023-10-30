@@ -11,9 +11,11 @@ import (
 )
 
 // TODO: Вынести в конфиги
-var delta = time.Second
-var ctx = KeyContext{}
-var mutex sync.Mutex
+var (
+	delta  = time.Second
+	keyCtx = KeyContext{}
+	mutex  sync.Mutex
+)
 
 func connectDevice() (in drivers.In, out drivers.Out) {
 	inPort, err := midi.FindInPort("MPD226")
@@ -62,8 +64,8 @@ func startupIllumination(out drivers.Out) {
 	}
 }
 
-func listen(in drivers.In, signals chan<- core.Signal, done <-chan bool) {
-	_, err := midi.ListenTo(in, getMidiMessage, midi.UseSysEx())
+func listen(in drivers.In, signals chan<- core.Signal, shutdown <-chan bool) {
+	stop, err := midi.ListenTo(in, getMidiMessage, midi.UseSysEx())
 
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
@@ -73,7 +75,8 @@ func listen(in drivers.In, signals chan<- core.Signal, done <-chan bool) {
 	for {
 		signal := messageToSignal()
 		select {
-		case <-done:
+		case <-shutdown:
+			stop()
 			return
 		default:
 			sendSignal(signals, signal)
@@ -100,24 +103,21 @@ func getMidiMessage(msg midi.Message, timestamps int32) {
 		return
 	case msg.GetNoteOn(&channel, &key, &velocity):
 		// Бан одновременного нажатия множества клавиш
-		if !ctx.getPreviousKey().isActive() {
-			ctx.setCurrentKey(MidiKey{int(key), int(velocity), time.Now(),
+		if !keyCtx.isPreviousKeyActive() {
+			keyCtx.setCurrentKey(MidiKey{int(key), int(velocity), time.Now(),
 				NotePushed{int(key), int(velocity)}})
-			_ = ctx.getCurrentKey().getStatus()
 		}
 	case msg.GetNoteOff(&channel, &key, &velocity):
-		if int(key) == ctx.getCurrentKey().key {
-			ctx.getCurrentKey().setStatus(NoteReleased{int(key), int(velocity)})
+		if int(key) == keyCtx.currentKey.getKeyCode() {
+			keyCtx.currentKey.setStatus(NoteReleased{int(key), int(velocity)})
 		}
-		_ = ctx.getCurrentKey().getStatus()
 	case msg.GetControlChange(&channel, &key, &velocity):
 		// Бан одновременного нажатия множества клавиш
-		if !ctx.getPreviousKey().isActive() {
-			ctx.setCurrentKey(MidiKey{int(key), int(velocity), time.Now(),
+		if !keyCtx.isPreviousKeyActive() {
+			keyCtx.setCurrentKey(MidiKey{int(key), int(velocity), time.Now(),
 				ControlPushed{int(key), int(velocity)}})
 		}
 	default:
-		fmt.Println(msg)
 	}
 }
 
@@ -125,54 +125,55 @@ func messageToSignal() core.Signal {
 	mutex.Lock()
 	defer mutex.Unlock()
 	var signal core.Signal
-	if !ctx.compareKeys() {
-		ctx.setPreviousKey(MidiKey{ctx.currentKey.key,
-			ctx.currentKey.velocity,
-			ctx.currentKey.usedAt,
+	if !keyCtx.compareKeys() {
+		keyCtx.setPreviousKey(MidiKey{keyCtx.currentKey.getKeyCode(),
+			keyCtx.currentKey.getVelocity(),
+			keyCtx.currentKey.getUsedAt(),
 			nil})
 	}
-	switch ctx.currentKey.status.(type) {
+	switch keyCtx.currentKey.status.(type) {
 	case NotePushed:
-		if time.Now().Sub(ctx.currentKey.usedAt) >= delta {
-			ctx.getCurrentKey().setStatus(NoteHold{ctx.currentKey.key, ctx.currentKey.velocity})
+		if time.Now().Sub(keyCtx.currentKey.getUsedAt()) >= delta {
+			keyCtx.currentKey.setStatus(NoteHold{keyCtx.currentKey.getKeyCode(),
+				keyCtx.currentKey.getVelocity()})
 			return nil
 		}
-		if !ctx.compareStatuses() {
-			ctx.getPreviousKey().setStatus(ctx.currentKey.status)
-			signal = NotePushed{ctx.currentKey.key,
-				ctx.currentKey.velocity}
+		if !keyCtx.compareStatuses() {
+			keyCtx.previousKey.setStatus(keyCtx.currentKey.getStatus())
+			signal = NotePushed{keyCtx.currentKey.getKeyCode(),
+				keyCtx.currentKey.getVelocity()}
 			return signal
 		}
 	case NoteHold:
-		if !ctx.compareStatuses() {
-			ctx.getPreviousKey().setStatus(ctx.currentKey.status)
-			signal = NoteHold{ctx.currentKey.key,
-				ctx.currentKey.velocity}
+		if !keyCtx.compareStatuses() {
+			keyCtx.previousKey.setStatus(keyCtx.currentKey.getStatus())
+			signal = NoteHold{keyCtx.currentKey.getKeyCode(),
+				keyCtx.currentKey.getVelocity()}
 			return signal
 		}
 	case NoteReleased:
-		if !ctx.compareStatuses() {
-			ctx.getPreviousKey().setStatus(ctx.currentKey.status)
-			signal = NoteReleased{ctx.currentKey.key,
-				ctx.currentKey.velocity}
+		if !keyCtx.compareStatuses() {
+			keyCtx.previousKey.setStatus(keyCtx.currentKey.getStatus())
+			signal = NoteReleased{keyCtx.currentKey.getKeyCode(),
+				keyCtx.currentKey.getVelocity()}
 			return signal
 		}
 	case ControlPushed:
-		if !ctx.compareStatuses() {
-			ctx.getPreviousKey().setStatus(ctx.currentKey.status)
-			signal = ControlPushed{ctx.currentKey.key,
-				ctx.currentKey.velocity}
+		if !keyCtx.compareStatuses() {
+			keyCtx.previousKey.setStatus(keyCtx.currentKey.getStatus())
+			signal = ControlPushed{keyCtx.currentKey.getKeyCode(),
+				keyCtx.currentKey.getVelocity()}
 			return signal
 		}
 	}
 	return nil
 }
 
-func Run(signals chan<- core.Signal, done <-chan bool) {
+func Run(signals chan<- core.Signal, shutdown <-chan bool) {
 	defer midi.CloseDriver()
 	in, out := connectDevice()
 	defer in.Close()
 	defer out.Close()
 	startupIllumination(out)
-	listen(in, signals, done)
+	listen(in, signals, shutdown)
 }

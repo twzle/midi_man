@@ -18,15 +18,18 @@ func main() {
 	}
 
 	signals := make(chan core.Signal)
-	_ = hubman.NewAgentApp(
+	app := hubman.NewAgentApp(
 		agentConf,
 		hubman.WithManipulator(
-			hubman.WithSignal[NotePushed](), hubman.WithSignal[NoteHold](), hubman.WithSignal[NoteReleased](),
+			hubman.WithSignal[NotePushed](),
+			hubman.WithSignal[NoteHold](),
+			hubman.WithSignal[NoteReleased](),
 			hubman.WithSignal[ControlPushed](),
 			hubman.WithChannel(signals),
 		),
 	)
 
-	done := make(chan bool)
-	Run(signals, done)
+	shutdown := app.WaitShutdown()
+	Run(signals, shutdown)
+
 }

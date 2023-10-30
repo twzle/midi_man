@@ -12,6 +12,18 @@ type MidiKey struct {
 	status   core.Signal
 }
 
+func (mk *MidiKey) getKeyCode() int {
+	return mk.key
+}
+
+func (mk *MidiKey) getVelocity() int {
+	return mk.velocity
+}
+
+func (mk *MidiKey) getUsedAt() time.Time {
+	return mk.usedAt
+}
+
 func (mk *MidiKey) getStatus() core.Signal {
 	return mk.status
 }
@@ -23,13 +35,9 @@ func (mk *MidiKey) setStatus(status core.Signal) {
 func (mk *MidiKey) isActive() bool {
 	switch mk.getStatus().(type) {
 	case nil, NoteReleased, ControlPushed:
-		{
-			return false
-		}
+		return false
 	default:
-		{
-			return true
-		}
+		return true
 	}
 }
 
@@ -43,28 +51,23 @@ func (kctx *KeyContext) setCurrentKey(key MidiKey) {
 	kctx.currentKey = key
 }
 
-func (kctx *KeyContext) getCurrentKey() *MidiKey {
-	return &kctx.currentKey
+func (kctx *KeyContext) getCurrentKey() MidiKey {
+	return kctx.currentKey
 }
 
 func (kctx *KeyContext) setPreviousKey(key MidiKey) {
 	kctx.previousKey = key
 }
 
-func (kctx *KeyContext) getPreviousKey() *MidiKey {
-	return &kctx.previousKey
+func (kctx *KeyContext) getPreviousKey() MidiKey {
+	return kctx.previousKey
 }
 
 func (kctx *KeyContext) isPreviousKeyActive() bool {
-	switch kctx.previousKey.getStatus().(type) {
-	case nil, NoteReleased:
-		{
-			return false
-		}
-	default:
-		{
-			return true
-		}
+	if &kctx.previousKey != nil {
+		return kctx.previousKey.isActive()
+	} else {
+		return false
 	}
 }
 
