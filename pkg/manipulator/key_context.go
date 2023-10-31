@@ -1,7 +1,8 @@
-package main
+package manipulator
 
 import (
 	"git.miem.hse.ru/hubman/hubman-lib/core"
+	"midi_manipulator/pkg/signals"
 	"time"
 )
 
@@ -34,7 +35,7 @@ func (mk *MidiKey) setStatus(status core.Signal) {
 
 func (mk *MidiKey) isActive() bool {
 	switch mk.getStatus().(type) {
-	case nil, NoteReleased, ControlPushed:
+	case nil, signals.NoteReleased, signals.ControlPushed:
 		return false
 	default:
 		return true
