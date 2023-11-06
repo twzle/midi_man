@@ -7,17 +7,17 @@ import (
 )
 
 type MidiKey struct {
-	key      int
-	velocity int
+	key      float64
+	velocity float64
 	usedAt   time.Time
 	status   core.Signal
 }
 
-func (mk *MidiKey) getKeyCode() int {
+func (mk *MidiKey) getKeyCode() float64 {
 	return mk.key
 }
 
-func (mk *MidiKey) getVelocity() int {
+func (mk *MidiKey) getVelocity() float64 {
 	return mk.velocity
 }
 

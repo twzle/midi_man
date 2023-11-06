@@ -28,6 +28,8 @@ func main() {
 			},
 			RedisUrl: cfg.RedisConfig.URL,
 		},
+		User:            cfg.MIDIConfig,
+		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
 
 	signals := make(chan core.Signal)
@@ -45,5 +47,4 @@ func main() {
 
 	midiManipulator := manipulator.MidiManipulator{}
 	midiManipulator.Run(cfg.MIDIConfig, signals, shutdown)
-
 }

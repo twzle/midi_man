@@ -29,8 +29,8 @@ type MidiPorts struct {
 	out drivers.Out
 }
 
-func (mm *MidiManipulator) setHoldDelta(delta float32) {
-	mm.holdDelta = time.Duration(float32(time.Second) * delta)
+func (mm *MidiManipulator) setHoldDelta(delta float64) {
+	mm.holdDelta = time.Duration(float64(time.Second) * delta)
 }
 
 func (mm *MidiManipulator) setDeviceName(deviceName string) {
@@ -113,7 +113,7 @@ func (mm *MidiManipulator) listen(signals chan<- core.Signal, shutdown <-chan bo
 
 func (mm *MidiManipulator) sendSignal(signals chan<- core.Signal, signal core.Signal) {
 	if signal != nil {
-		log.Println(signal.Code(), signal)
+		log.Printf("%s, %f\n", signal.Code(), signal)
 		signals <- signal
 	}
 }
@@ -131,20 +131,19 @@ func (mm *MidiManipulator) getMidiMessage(msg midi.Message, timestamps int32) {
 	case msg.GetNoteOn(&channel, &key, &velocity):
 		// Бан одновременного нажатия множества клавиш
 		if !mm.keyCtx.isPreviousKeyActive() {
-			mm.keyCtx.setCurrentKey(MidiKey{int(key), int(velocity), time.Now(),
-				signals.NotePushed{int(key), int(velocity)}})
+			mm.keyCtx.setCurrentKey(MidiKey{float64(key), float64(velocity), time.Now(),
+				signals.NotePushed{float64(key), float64(velocity)}})
 		}
 	case msg.GetNoteOff(&channel, &key, &velocity):
-		if int(key) == mm.keyCtx.currentKey.getKeyCode() {
-			mm.keyCtx.currentKey.setStatus(signals.NoteReleased{int(key), int(velocity)})
+		if float64(key) == mm.keyCtx.currentKey.getKeyCode() {
+			mm.keyCtx.currentKey.setStatus(signals.NoteReleased{float64(key), float64(velocity)})
 		}
 	case msg.GetControlChange(&channel, &key, &velocity):
 		// Бан одновременного нажатия множества клавиш
 		if !mm.keyCtx.isPreviousKeyActive() {
-			mm.keyCtx.setCurrentKey(MidiKey{int(key), int(velocity), time.Now(),
-				signals.ControlPushed{int(key), int(velocity)}})
+			mm.keyCtx.setCurrentKey(MidiKey{float64(key), float64(velocity), time.Now(),
+				signals.ControlPushed{float64(key), float64(velocity)}})
 		}
-	default:
 	}
 }
 
@@ -167,7 +166,7 @@ func (mm *MidiManipulator) messageToSignal() core.Signal {
 		}
 		if !mm.keyCtx.compareStatuses() {
 			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.NotePushed{mm.keyCtx.currentKey.getKeyCode(),
+			signal = signals.NotePushed{float64(mm.keyCtx.currentKey.getKeyCode()),
 				mm.keyCtx.currentKey.getVelocity()}
 			return signal
 		}
