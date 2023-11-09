@@ -58,37 +58,8 @@ func (mm *MidiManipulator) applyConfiguration(config config.MIDIConfig) {
 	mm.setHoldDelta(config.HoldDelta)
 }
 
-func (mm *MidiManipulator) connectDevice(inPort drivers.In, outPort drivers.Out) {
+func (mm *MidiManipulator) connectDevice(inPort drivers.In) {
 	mm.device.ports.in, _ = midi.InPort(inPort.Number())
-	mm.device.ports.out, _ = midi.OutPort(outPort.Number())
-}
-
-func (mm *MidiManipulator) startupIllumination() {
-	// AKAI MPD226 DIV'S
-	for i := 0; i < 4; i++ {
-		msg := midi.Message{177, byte(i), 127}
-		time.Sleep(time.Millisecond * 50)
-		mm.device.ports.out.Send(msg)
-	}
-
-	for i := 0; i < 4; i++ {
-		msg := midi.Message{177, byte(i), 0}
-		time.Sleep(time.Millisecond * 50)
-		mm.device.ports.out.Send(msg)
-	}
-
-	// AKAI MPD226 PADS
-	for i := 60; i < 88; i++ {
-		msg := midi.Message{145, byte(i), 4}
-		time.Sleep(time.Millisecond * 50)
-		mm.device.ports.out.Send(msg)
-	}
-
-	for i := 60; i < 88; i++ {
-		msg := midi.Message{129, byte(i), 2}
-		time.Sleep(time.Millisecond * 50)
-		mm.device.ports.out.Send(msg)
-	}
 }
 
 func (mm *MidiManipulator) listen(signals chan<- core.Signal, shutdown <-chan bool) {
@@ -203,9 +174,8 @@ func (mm *MidiManipulator) Run(config config.MIDIConfig, signals chan<- core.Sig
 	}
 
 	mm.applyConfiguration(config)
-	mm.connectDevice(inPort, outPort)
+	mm.connectDevice(inPort)
 	defer mm.device.ports.in.Close()
 	defer mm.device.ports.out.Close()
-	mm.startupIllumination()
 	mm.listen(signals, shutdown)
 }
