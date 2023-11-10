@@ -4,6 +4,7 @@ import (
 	"gitlab.com/gomidi/midi/v2"
 	"gitlab.com/gomidi/midi/v2/drivers"
 	"log"
+	"midi_manipulator/pkg/commands"
 	"midi_manipulator/pkg/config"
 	"sync"
 	"time"
@@ -21,11 +22,81 @@ type MidiDevice struct {
 }
 
 type MidiPorts struct {
-	in  drivers.In
 	out drivers.Out
 }
 
-func (me *MidiExecutor) startupIllumination() {
+func (me *MidiExecutor) StartupIllumination(config config.MIDIConfig) {
+	defer midi.CloseDriver()
+
+	outPort := me.getPortsByDeviceName(config.DeviceName)
+
+	if outPort == nil {
+		return
+	}
+
+	me.connectDevice(outPort)
+	defer me.device.ports.out.Close()
+
+	me.illuminate(config)
+}
+
+func (me *MidiExecutor) TurnLightOn(cmd commands.TurnLightOnCommand, config config.MIDIConfig) {
+	defer midi.CloseDriver()
+
+	outPort := me.getPortsByDeviceName(config.DeviceName)
+
+	if outPort == nil {
+		return
+	}
+
+	me.connectDevice(outPort)
+	defer me.device.ports.out.Close()
+
+	msg := me.getTurnLightOnMessage(cmd.KeyCode)
+	if msg != nil {
+		me.device.ports.out.Send(msg)
+	}
+}
+
+func (me *MidiExecutor) TurnLightOff(cmd commands.TurnLightOffCommand, config config.MIDIConfig) {
+	defer midi.CloseDriver()
+
+	outPort := me.getPortsByDeviceName(config.DeviceName)
+
+	if outPort == nil {
+		return
+	}
+
+	me.connectDevice(outPort)
+	defer me.device.ports.out.Close()
+
+	msg := me.getTurnLightOffMessage(cmd.KeyCode)
+	if msg != nil {
+		me.device.ports.out.Send(msg)
+	}
+}
+
+func (me *MidiExecutor) getTurnLightOnMessage(keyCode float64) midi.Message {
+	var msg midi.Message
+	if keyCode >= 59 && keyCode <= 87 {
+		msg = midi.Message{145, byte(keyCode), 2}
+	} else if keyCode >= 0 && keyCode <= 3 {
+		msg = midi.Message{177, byte(keyCode), 127}
+	}
+	return msg
+}
+
+func (me *MidiExecutor) getTurnLightOffMessage(keyCode float64) midi.Message {
+	var msg midi.Message
+	if keyCode >= 59 && keyCode <= 87 {
+		msg = midi.Message{129, byte(keyCode), 2}
+	} else if keyCode >= 0 && keyCode <= 3 {
+		msg = midi.Message{177, byte(keyCode), 0}
+	}
+	return msg
+}
+
+func (me *MidiExecutor) illuminate(config config.MIDIConfig) {
 	// AKAI MPD226 DIV'S
 	for i := 0; i < 4; i++ {
 		msg := midi.Message{177, byte(i), 127}
@@ -53,36 +124,17 @@ func (me *MidiExecutor) startupIllumination() {
 	}
 }
 
-func (me *MidiExecutor) getPortsByDeviceName(deviceName string) (drivers.In, drivers.Out) {
-	inPort, err := midi.FindInPort(deviceName)
-	if err != nil {
-		log.Println("Input port was not found")
-		return nil, nil
-	}
-
+func (me *MidiExecutor) getPortsByDeviceName(deviceName string) drivers.Out {
 	outPort, err := midi.FindOutPort(deviceName)
+
 	if err != nil {
 		log.Println("Output port was not found")
-		return nil, nil
+		return nil
 	}
 
-	return inPort, outPort
+	return outPort
 }
 
-func (me *MidiExecutor) connectDevice(inPort drivers.In, outPort drivers.Out) {
-	me.device.ports.in, _ = midi.InPort(inPort.Number())
+func (me *MidiExecutor) connectDevice(outPort drivers.Out) {
 	me.device.ports.out, _ = midi.OutPort(outPort.Number())
-}
-
-func (me *MidiExecutor) Run(config config.MIDIConfig) {
-	defer midi.CloseDriver()
-	inPort, outPort := me.getPortsByDeviceName(config.DeviceName)
-	if inPort == nil || outPort == nil {
-		return
-	}
-
-	me.connectDevice(inPort, outPort)
-	defer me.device.ports.in.Close()
-	defer me.device.ports.out.Close()
-	me.startupIllumination()
 }

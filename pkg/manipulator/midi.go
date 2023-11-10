@@ -25,8 +25,7 @@ type MidiDevice struct {
 }
 
 type MidiPorts struct {
-	in  drivers.In
-	out drivers.Out
+	in drivers.In
 }
 
 func (mm *MidiManipulator) setHoldDelta(delta float64) {
@@ -37,20 +36,14 @@ func (mm *MidiManipulator) setDeviceName(deviceName string) {
 	mm.device.name = deviceName
 }
 
-func (mm *MidiManipulator) getPortsByDeviceName(deviceName string) (drivers.In, drivers.Out) {
+func (mm *MidiManipulator) getPortsByDeviceName(deviceName string) drivers.In {
 	inPort, err := midi.FindInPort(deviceName)
 	if err != nil {
 		log.Println("Input port was not found")
-		return nil, nil
+		return nil
 	}
 
-	outPort, err := midi.FindOutPort(deviceName)
-	if err != nil {
-		log.Println("Output port was not found")
-		return nil, nil
-	}
-
-	return inPort, outPort
+	return inPort
 }
 
 func (mm *MidiManipulator) applyConfiguration(config config.MIDIConfig) {
@@ -168,14 +161,13 @@ func (mm *MidiManipulator) messageToSignal() core.Signal {
 
 func (mm *MidiManipulator) Run(config config.MIDIConfig, signals chan<- core.Signal, shutdown <-chan bool) {
 	defer midi.CloseDriver()
-	inPort, outPort := mm.getPortsByDeviceName(config.DeviceName)
-	if inPort == nil || outPort == nil {
+	inPort := mm.getPortsByDeviceName(config.DeviceName)
+	if inPort == nil {
 		return
 	}
 
 	mm.applyConfiguration(config)
 	mm.connectDevice(inPort)
 	defer mm.device.ports.in.Close()
-	defer mm.device.ports.out.Close()
 	mm.listen(signals, shutdown)
 }

@@ -1,8 +1,7 @@
 package commands
 
 type TurnLightOnCommand struct {
-	KeyCode     float64 `hubman:"key_code"`
-	RuleCommand string  `hubman:"rule_command"`
+	KeyCode float64 `hubman:"key_code"`
 }
 
 func (c TurnLightOnCommand) Code() string {
@@ -14,8 +13,7 @@ func (c TurnLightOnCommand) Description() string {
 }
 
 type TurnLightOffCommand struct {
-	KeyCode     float64 `hubman:"key_code"`
-	RuleCommand string  `hubman:"rule_command"`
+	KeyCode float64 `hubman:"key_code"`
 }
 
 func (c TurnLightOffCommand) Code() string {
@@ -27,8 +25,7 @@ func (c TurnLightOffCommand) Description() string {
 }
 
 type SingleBlinkCommand struct {
-	KeyCode     float64 `hubman:"key_code"`
-	RuleCommand string  `hubman:"rule_command"`
+	KeyCode float64 `hubman:"key_code"`
 }
 
 func (c SingleBlinkCommand) Code() string {
@@ -40,8 +37,7 @@ func (c SingleBlinkCommand) Description() string {
 }
 
 type SingleReversedBlinkCommand struct {
-	KeyCode     float64 `hubman:"key_code"`
-	RuleCommand string  `hubman:"rule_command"`
+	KeyCode float64 `hubman:"key_code"`
 }
 
 func (c SingleReversedBlinkCommand) Code() string {
@@ -53,8 +49,7 @@ func (c SingleReversedBlinkCommand) Description() string {
 }
 
 type ContinuousBlinkCommand struct {
-	KeyCode     float64 `hubman:"key_code"`
-	RuleCommand string  `hubman:"rule_command"`
+	KeyCode float64 `hubman:"key_code"`
 }
 
 func (c ContinuousBlinkCommand) Code() string {

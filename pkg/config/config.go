@@ -11,7 +11,12 @@ type RedisConfig struct {
 	URL string `yaml:"url"`
 }
 
-type ManpulatorConfig struct {
+type ManipulatorConfig struct {
+	IPAddr string `yaml:"host"`
+	Port   uint16 `yaml:"port"`
+}
+
+type ExecutorConfig struct {
 	IPAddr string `yaml:"host"`
 	Port   uint16 `yaml:"port"`
 }
@@ -22,9 +27,10 @@ type MIDIConfig struct {
 }
 
 type Config struct {
-	RedisConfig      RedisConfig      `yaml:"redis"`
-	ManpulatorConfig ManpulatorConfig `yaml:"manipulator"`
-	MIDIConfig       MIDIConfig       `yaml:"midi"`
+	RedisConfig       RedisConfig       `yaml:"redis"`
+	ManipulatorConfig ManipulatorConfig `yaml:"manipulator"`
+	ExecutorConfig    ExecutorConfig    `yaml:"executor"`
+	MIDIConfig        MIDIConfig        `yaml:"midi"`
 }
 
 func (conf *Config) Validate() error {
@@ -36,13 +42,21 @@ func (conf *Config) Validate() error {
 		return fmt.Errorf("valid MIDI hold_delta must be provided in config. Now {%s} is provided",
 			conf.MIDIConfig.DeviceName)
 	}
-	if conf.ManpulatorConfig.Port == 0 {
+	if conf.ManipulatorConfig.Port == 0 {
 		return fmt.Errorf("valid manipulator agent port must be provided in config. Now {%d} is provided",
-			conf.ManpulatorConfig.Port)
+			conf.ManipulatorConfig.Port)
 	}
-	if manipulatorIP := net.ParseIP(conf.ManpulatorConfig.IPAddr); manipulatorIP == nil {
+	if manipulatorIP := net.ParseIP(conf.ManipulatorConfig.IPAddr); manipulatorIP == nil {
 		return fmt.Errorf("valid manipulator agent ip must be provided in config. Now {%s} is provided",
-			conf.ManpulatorConfig.IPAddr)
+			conf.ManipulatorConfig.IPAddr)
+	}
+	if conf.ExecutorConfig.Port == 0 {
+		return fmt.Errorf("valid manipulator agent port must be provided in config. Now {%d} is provided",
+			conf.ManipulatorConfig.Port)
+	}
+	if executorIP := net.ParseIP(conf.ExecutorConfig.IPAddr); executorIP == nil {
+		return fmt.Errorf("valid manipulator agent ip must be provided in config. Now {%s} is provided",
+			conf.ManipulatorConfig.IPAddr)
 	}
 	if conf.RedisConfig.URL == "" {
 		return fmt.Errorf("valid Redis url must be provided in config. Now {%s} is provided",
