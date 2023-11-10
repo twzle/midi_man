@@ -23,46 +23,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	setupManipulatorApp(*cfg)
-	setupExecutorApp(*cfg)
+	setupApp(*cfg)
 }
 
-func setupManipulatorApp(cfg config.Config) {
-	manipulatorAgentConf := core.AgentConfiguration{
+func setupApp(cfg config.Config) {
+	agentConf := core.AgentConfiguration{
 		System: &core.SystemConfig{
 			Server: &core.InterfaceConfig{
-				IP:   net.ParseIP(cfg.ManipulatorConfig.IPAddr),
-				Port: cfg.ManipulatorConfig.Port,
-			},
-			RedisUrl: cfg.RedisConfig.URL,
-		},
-		User:            cfg.MIDIConfig,
-		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
-	}
-
-	signals := make(chan core.Signal)
-	manipulatorApp := hubman.NewAgentApp(
-		manipulatorAgentConf,
-		hubman.WithManipulator(
-			hubman.WithSignal[midiSignals.NotePushed](),
-			hubman.WithSignal[midiSignals.NoteHold](),
-			hubman.WithSignal[midiSignals.NoteReleased](),
-			hubman.WithSignal[midiSignals.ControlPushed](),
-			hubman.WithChannel(signals),
-		),
-	)
-	shutdown := manipulatorApp.WaitShutdown()
-
-	midiManipulatorInstance := midiManipulator.MidiManipulator{}
-	go midiManipulatorInstance.Run(cfg.MIDIConfig, signals, shutdown)
-}
-
-func setupExecutorApp(cfg config.Config) {
-	executorAgentConf := core.AgentConfiguration{
-		System: &core.SystemConfig{
-			Server: &core.InterfaceConfig{
-				IP:   net.ParseIP(cfg.ExecutorConfig.IPAddr),
-				Port: cfg.ExecutorConfig.Port,
+				IP:   net.ParseIP(cfg.AppConfig.IPAddr),
+				Port: cfg.AppConfig.Port,
 			},
 			RedisUrl: cfg.RedisConfig.URL,
 		},
@@ -71,10 +40,18 @@ func setupExecutorApp(cfg config.Config) {
 	}
 
 	midiExecutorInstance := midiExecutor.MidiExecutor{}
-	go midiExecutorInstance.StartupIllumination(cfg.MIDIConfig)
+	midiExecutorInstance.StartupIllumination(cfg.MIDIConfig)
 
-	executorApp := hubman.NewAgentApp(
-		executorAgentConf,
+	signals := make(chan core.Signal)
+	app := hubman.NewAgentApp(
+		agentConf,
+		hubman.WithManipulator(
+			hubman.WithSignal[midiSignals.NotePushed](),
+			hubman.WithSignal[midiSignals.NoteHold](),
+			hubman.WithSignal[midiSignals.NoteReleased](),
+			hubman.WithSignal[midiSignals.ControlPushed](),
+			hubman.WithChannel(signals),
+		),
 		hubman.WithExecutor(hubman.WithCommand(commands.TurnLightOnCommand{},
 			func(command core.SerializedCommand, parser executor.CommandParser) {
 				var cmd commands.TurnLightOnCommand
@@ -99,10 +76,12 @@ func setupExecutorApp(cfg config.Config) {
 			})),
 		hubman.WithExecutor(hubman.WithCommand(commands.ContinuousBlinkCommand{},
 			func(command core.SerializedCommand, parser executor.CommandParser) {
-				var cmd commands.SingleReversedBlinkCommand
+				var cmd commands.ContinuousBlinkCommand
 				parser(&cmd)
 			})),
 	)
+	shutdown := app.WaitShutdown()
 
-	<-executorApp.WaitShutdown()
+	midiManipulatorInstance := midiManipulator.MidiManipulator{}
+	midiManipulatorInstance.Run(cfg.MIDIConfig, signals, shutdown)
 }
