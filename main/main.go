@@ -55,33 +55,34 @@ func setupApp(cfg config.Config) {
 			hubman.WithSignal[midiSignals.ControlPushed](),
 			hubman.WithChannel(signals),
 		),
-		hubman.WithExecutor(hubman.WithCommand(commands.TurnLightOnCommand{},
-			func(command core.SerializedCommand, parser executor.CommandParser) {
-				var cmd commands.TurnLightOnCommand
-				parser(&cmd)
-				midiExecutorInstance.TurnLightOn(cmd, cfg.MIDIConfig)
-			})),
-		hubman.WithExecutor(hubman.WithCommand(commands.TurnLightOffCommand{},
-			func(command core.SerializedCommand, parser executor.CommandParser) {
-				var cmd commands.TurnLightOffCommand
-				parser(&cmd)
-				midiExecutorInstance.TurnLightOff(cmd, cfg.MIDIConfig)
-			})),
-		hubman.WithExecutor(hubman.WithCommand(commands.SingleBlinkCommand{},
-			func(command core.SerializedCommand, parser executor.CommandParser) {
-				var cmd commands.SingleBlinkCommand
-				parser(&cmd)
-			})),
-		hubman.WithExecutor(hubman.WithCommand(commands.SingleReversedBlinkCommand{},
-			func(command core.SerializedCommand, parser executor.CommandParser) {
-				var cmd commands.SingleReversedBlinkCommand
-				parser(&cmd)
-			})),
-		hubman.WithExecutor(hubman.WithCommand(commands.ContinuousBlinkCommand{},
-			func(command core.SerializedCommand, parser executor.CommandParser) {
-				var cmd commands.ContinuousBlinkCommand
-				parser(&cmd)
-			})),
+		hubman.WithExecutor(
+			hubman.WithCommand(commands.TurnLightOnCommand{},
+				func(command core.SerializedCommand, parser executor.CommandParser) {
+					var cmd commands.TurnLightOnCommand
+					parser(&cmd)
+					midiExecutorInstance.TurnLightOn(cmd, cfg.MIDIConfig)
+				}),
+			hubman.WithCommand(commands.TurnLightOffCommand{},
+				func(command core.SerializedCommand, parser executor.CommandParser) {
+					var cmd commands.TurnLightOffCommand
+					parser(&cmd)
+					midiExecutorInstance.TurnLightOff(cmd, cfg.MIDIConfig)
+				}),
+			hubman.WithCommand(commands.SingleBlinkCommand{},
+				func(command core.SerializedCommand, parser executor.CommandParser) {
+					var cmd commands.SingleBlinkCommand
+					parser(&cmd)
+				}),
+			hubman.WithCommand(commands.SingleReversedBlinkCommand{},
+				func(command core.SerializedCommand, parser executor.CommandParser) {
+					var cmd commands.SingleReversedBlinkCommand
+					parser(&cmd)
+				}),
+			hubman.WithCommand(commands.ContinuousBlinkCommand{},
+				func(command core.SerializedCommand, parser executor.CommandParser) {
+					var cmd commands.ContinuousBlinkCommand
+					parser(&cmd)
+				})),
 	)
 	shutdown := app.WaitShutdown()
 
