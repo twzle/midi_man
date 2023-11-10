@@ -5,6 +5,7 @@ import (
 	"git.miem.hse.ru/hubman/hubman-lib"
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"git.miem.hse.ru/hubman/hubman-lib/executor"
+	"gitlab.com/gomidi/midi/v2"
 	"log"
 	"midi_manipulator/pkg/commands"
 	"midi_manipulator/pkg/config"
@@ -15,7 +16,9 @@ import (
 )
 
 func main() {
-	configPath := flag.String("conf_path", "configs/config.yaml", "set configs path")
+	defer midi.CloseDriver()
+
+	configPath := flag.String("conf_path", "configs/config.json", "set configs path")
 	flag.Parse()
 
 	cfg, err := config.InitConfig(*configPath)
@@ -40,7 +43,7 @@ func setupApp(cfg config.Config) {
 	}
 
 	midiExecutorInstance := midiExecutor.MidiExecutor{}
-	midiExecutorInstance.StartupIllumination(cfg.MIDIConfig)
+	go midiExecutorInstance.StartupIllumination(cfg.MIDIConfig)
 
 	signals := make(chan core.Signal)
 	app := hubman.NewAgentApp(

@@ -160,7 +160,6 @@ func (mm *MidiManipulator) messageToSignal() core.Signal {
 }
 
 func (mm *MidiManipulator) Run(config config.MIDIConfig, signals chan<- core.Signal, shutdown <-chan bool) {
-	defer midi.CloseDriver()
 	inPort := mm.getPortsByDeviceName(config.DeviceName)
 	if inPort == nil {
 		return

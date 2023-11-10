@@ -26,8 +26,6 @@ type MidiPorts struct {
 }
 
 func (me *MidiExecutor) StartupIllumination(config config.MIDIConfig) {
-	defer midi.CloseDriver()
-
 	outPort := me.getPortsByDeviceName(config.DeviceName)
 
 	if outPort == nil {
@@ -41,8 +39,6 @@ func (me *MidiExecutor) StartupIllumination(config config.MIDIConfig) {
 }
 
 func (me *MidiExecutor) TurnLightOn(cmd commands.TurnLightOnCommand, config config.MIDIConfig) {
-	defer midi.CloseDriver()
-
 	outPort := me.getPortsByDeviceName(config.DeviceName)
 
 	if outPort == nil {
@@ -59,8 +55,6 @@ func (me *MidiExecutor) TurnLightOn(cmd commands.TurnLightOnCommand, config conf
 }
 
 func (me *MidiExecutor) TurnLightOff(cmd commands.TurnLightOffCommand, config config.MIDIConfig) {
-	defer midi.CloseDriver()
-
 	outPort := me.getPortsByDeviceName(config.DeviceName)
 
 	if outPort == nil {

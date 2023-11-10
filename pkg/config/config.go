@@ -1,35 +1,35 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"net"
 	"os"
 )
 
 type RedisConfig struct {
-	URL string `yaml:"url"`
+	URL string `json:"url"`
 }
 
 type AppConfig struct {
-	IPAddr string `yaml:"host"`
-	Port   uint16 `yaml:"port"`
+	IPAddr string `json:"host"`
+	Port   uint16 `json:"port"`
 }
 
 type ExecutorConfig struct {
-	IPAddr string `yaml:"host"`
-	Port   uint16 `yaml:"port"`
+	IPAddr string `json:"host"`
+	Port   uint16 `json:"port"`
 }
 
 type MIDIConfig struct {
-	DeviceName string  `yaml:"device_name"`
-	HoldDelta  float64 `yaml:"hold_delta"`
+	DeviceName string  `json:"device_name"`
+	HoldDelta  float64 `json:"hold_delta"`
 }
 
 type Config struct {
-	RedisConfig RedisConfig `yaml:"redis"`
-	AppConfig   AppConfig   `yaml:"app"`
-	MIDIConfig  MIDIConfig  `yaml:"midi"`
+	RedisConfig RedisConfig `json:"redis"`
+	AppConfig   AppConfig   `json:"app"`
+	MIDIConfig  MIDIConfig  `json:"midi"`
 }
 
 func (conf *Config) Validate() error {
@@ -57,24 +57,18 @@ func (conf *Config) Validate() error {
 }
 
 func InitConfig(confPath string) (*Config, error) {
-	yFile, err := os.ReadFile(confPath)
+	jsonFile, err := os.ReadFile(confPath)
 	if err != nil {
 		return nil, err
 	}
-	cfg := Config{}
-
-	err = yaml.Unmarshal(yFile, &cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+	cfg, err := ParseConfigFromBytes(jsonFile)
+	return cfg, err
 }
 
 func ParseConfigFromBytes(data []byte) (*Config, error) {
 	cfg := Config{}
 
-	err := yaml.Unmarshal(data, &cfg)
+	err := json.Unmarshal(data, &cfg)
 	if err != nil {
 		return nil, err
 	}
