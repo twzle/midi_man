@@ -22,7 +22,7 @@ type MidiDevice struct {
 }
 
 type MidiPorts struct {
-	out drivers.Out
+	out *drivers.Out
 }
 
 func (me *MidiExecutor) StartupIllumination(config config.MIDIConfig) {
@@ -33,7 +33,6 @@ func (me *MidiExecutor) StartupIllumination(config config.MIDIConfig) {
 	}
 
 	me.connectDevice(outPort)
-	defer me.device.ports.out.Close()
 
 	me.illuminate(config)
 }
@@ -46,11 +45,10 @@ func (me *MidiExecutor) TurnLightOn(cmd commands.TurnLightOnCommand, config conf
 	}
 
 	me.connectDevice(outPort)
-	defer me.device.ports.out.Close()
 
 	msg := me.getTurnLightOnMessage(cmd.KeyCode)
 	if msg != nil {
-		me.device.ports.out.Send(msg)
+		(*me.device.ports.out).Send(msg)
 	}
 }
 
@@ -62,15 +60,14 @@ func (me *MidiExecutor) TurnLightOff(cmd commands.TurnLightOffCommand, config co
 	}
 
 	me.connectDevice(outPort)
-	defer me.device.ports.out.Close()
 
 	msg := me.getTurnLightOffMessage(cmd.KeyCode)
 	if msg != nil {
-		me.device.ports.out.Send(msg)
+		(*me.device.ports.out).Send(msg)
 	}
 }
 
-func (me *MidiExecutor) getTurnLightOnMessage(keyCode float64) midi.Message {
+func (me *MidiExecutor) getTurnLightOnMessage(keyCode int) midi.Message {
 	var msg midi.Message
 	if keyCode >= 59 && keyCode <= 87 {
 		msg = midi.Message{145, byte(keyCode), 2}
@@ -80,7 +77,7 @@ func (me *MidiExecutor) getTurnLightOnMessage(keyCode float64) midi.Message {
 	return msg
 }
 
-func (me *MidiExecutor) getTurnLightOffMessage(keyCode float64) midi.Message {
+func (me *MidiExecutor) getTurnLightOffMessage(keyCode int) midi.Message {
 	var msg midi.Message
 	if keyCode >= 59 && keyCode <= 87 {
 		msg = midi.Message{129, byte(keyCode), 2}
@@ -95,26 +92,26 @@ func (me *MidiExecutor) illuminate(config config.MIDIConfig) {
 	for i := 0; i < 4; i++ {
 		msg := midi.Message{177, byte(i), 127}
 		time.Sleep(time.Millisecond * 50)
-		me.device.ports.out.Send(msg)
+		(*me.device.ports.out).Send(msg)
 	}
 
 	for i := 0; i < 4; i++ {
 		msg := midi.Message{177, byte(i), 0}
 		time.Sleep(time.Millisecond * 50)
-		me.device.ports.out.Send(msg)
+		(*me.device.ports.out).Send(msg)
 	}
 
 	// AKAI MPD226 PADS
 	for i := 60; i < 88; i++ {
 		msg := midi.Message{145, byte(i), 4}
 		time.Sleep(time.Millisecond * 50)
-		me.device.ports.out.Send(msg)
+		(*me.device.ports.out).Send(msg)
 	}
 
 	for i := 60; i < 88; i++ {
 		msg := midi.Message{129, byte(i), 2}
 		time.Sleep(time.Millisecond * 50)
-		me.device.ports.out.Send(msg)
+		(*me.device.ports.out).Send(msg)
 	}
 }
 
@@ -130,5 +127,10 @@ func (me *MidiExecutor) getPortsByDeviceName(deviceName string) drivers.Out {
 }
 
 func (me *MidiExecutor) connectDevice(outPort drivers.Out) {
-	me.device.ports.out, _ = midi.OutPort(outPort.Number())
+	port, err := midi.OutPort(outPort.Number())
+	if err != nil {
+		return
+	}
+
+	me.device.ports.out = &port
 }

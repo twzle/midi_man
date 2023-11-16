@@ -26,10 +26,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	setupApp(*cfg)
+	setupApp(cfg)
 }
 
-func setupApp(cfg config.Config) {
+func setupApp(cfg *config.Config) {
 	agentConf := core.AgentConfiguration{
 		System: &core.SystemConfig{
 			Server: &core.InterfaceConfig{
@@ -87,5 +87,9 @@ func setupApp(cfg config.Config) {
 	shutdown := app.WaitShutdown()
 
 	midiManipulatorInstance := midiManipulator.MidiManipulator{}
-	midiManipulatorInstance.Run(cfg.MIDIConfig, signals, shutdown)
+	go midiManipulatorInstance.Run(cfg.MIDIConfig, signals, shutdown)
+
+	<-app.WaitShutdown()
+
+	return
 }
