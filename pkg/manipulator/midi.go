@@ -13,10 +13,10 @@ import (
 )
 
 type MidiManipulator struct {
-	device    MidiDevice
-	keyCtx    KeyContext
-	holdDelta time.Duration
-	mutex     sync.Mutex
+	device      MidiDevice
+	clickBuffer ClickBuffer
+	holdDelta   time.Duration
+	mutex       sync.Mutex
 }
 
 type MidiDevice struct {
@@ -49,6 +49,7 @@ func (mm *MidiManipulator) getPortsByDeviceName(deviceName string) drivers.In {
 func (mm *MidiManipulator) applyConfiguration(config config.MIDIConfig) {
 	mm.setDeviceName(config.DeviceName)
 	mm.setHoldDelta(config.HoldDelta)
+	mm.clickBuffer.buffer = make(map[int]KeyContext)
 }
 
 func (mm *MidiManipulator) connectDevice(inPort drivers.In) {
@@ -69,13 +70,15 @@ func (mm *MidiManipulator) listen(signals chan<- core.Signal, shutdown <-chan bo
 	}
 
 	for {
-		signal := mm.messageToSignal()
+		signal_sequence := mm.messageToSignal()
 		select {
 		case <-shutdown:
 			stop()
 			return
 		default:
-			mm.sendSignal(signals, signal)
+			for _, signal := range signal_sequence {
+				mm.sendSignal(signals, signal)
+			}
 		}
 	}
 }
@@ -98,70 +101,67 @@ func (mm *MidiManipulator) getMidiMessage(msg midi.Message, timestamps int32) {
 	case msg.GetSysEx(&bt):
 		return
 	case msg.GetNoteOn(&channel, &key, &velocity):
-		// Бан одновременного нажатия множества клавиш
-		if !mm.keyCtx.isPreviousKeyActive() {
-			mm.keyCtx.setCurrentKey(MidiKey{int(key), int(velocity), time.Now(),
-				signals.NotePushed{int(key), int(velocity)}})
-		}
+		// NIL STATUS
+		kctx := KeyContext{int(key), int(velocity), time.Now(),
+			nil}
+		mm.clickBuffer.setKeyContext(int(key), kctx)
 	case msg.GetNoteOff(&channel, &key, &velocity):
-		if int(key) == mm.keyCtx.currentKey.getKeyCode() {
-			mm.keyCtx.currentKey.setStatus(signals.NoteReleased{int(key), int(velocity)})
+		// NOTE RELEASED STATUS
+		val, ok := mm.clickBuffer.getKeyContext(int(key))
+		if ok {
+			val.status = signals.NoteReleased{int(key), int(velocity)}
+			mm.clickBuffer.setKeyContext(int(key), val)
 		}
 	case msg.GetControlChange(&channel, &key, &velocity):
-		// Бан одновременного нажатия множества клавиш
-		if !mm.keyCtx.isPreviousKeyActive() {
-			mm.keyCtx.setCurrentKey(MidiKey{int(key), int(velocity), time.Now(),
-				signals.ControlPushed{int(key), int(velocity)}})
-		}
+		// CONTROL PUSHED STATUS
+		kctx := KeyContext{int(key), int(velocity), time.Now(),
+			signals.ControlPushed{int(key), int(velocity)}}
+		mm.clickBuffer.setKeyContext(int(key), kctx)
 	}
 }
 
-func (mm *MidiManipulator) messageToSignal() core.Signal {
+func (mm *MidiManipulator) messageToSignal() []core.Signal {
 	mm.mutex.Lock()
 	defer mm.mutex.Unlock()
-	var signal core.Signal
-	if !mm.keyCtx.compareKeys() {
-		mm.keyCtx.setPreviousKey(MidiKey{mm.keyCtx.currentKey.getKeyCode(),
-			mm.keyCtx.currentKey.getVelocity(),
-			mm.keyCtx.currentKey.getUsedAt(),
-			nil})
-	}
-	switch mm.keyCtx.currentKey.status.(type) {
-	case signals.NotePushed:
-		if time.Now().Sub(mm.keyCtx.currentKey.getUsedAt()) >= mm.holdDelta {
-			mm.keyCtx.currentKey.setStatus(signals.NoteHold{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()})
-			return nil
-		}
-		if !mm.keyCtx.compareStatuses() {
-			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.NotePushed{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()}
-			return signal
-		}
-	case signals.NoteHold:
-		if !mm.keyCtx.compareStatuses() {
-			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.NoteHold{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()}
-			return signal
-		}
-	case signals.NoteReleased:
-		if !mm.keyCtx.compareStatuses() {
-			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.NoteReleased{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()}
-			return signal
-		}
-	case signals.ControlPushed:
-		if !mm.keyCtx.compareStatuses() {
-			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.ControlPushed{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()}
-			return signal
+	var signal_sequence []core.Signal
+	for _, kctx := range mm.clickBuffer.buffer {
+		switch kctx.status.(type) {
+		case nil:
+			signal := signals.NotePushed{kctx.key,
+				kctx.velocity}
+			signal_sequence = append(signal_sequence, signal)
+			// UPDATE KEY STATUS IN BUFFER
+			kctx.status = signal
+			mm.clickBuffer.setKeyContext(kctx.key, kctx)
+		case signals.NotePushed:
+			if time.Now().Sub(kctx.usedAt) >= mm.holdDelta {
+				signal := signals.NoteHold{kctx.key,
+					kctx.velocity}
+				signal_sequence = append(signal_sequence, signal)
+				// UPDATE KEY STATUS IN BUFFER
+				kctx.status = signal
+				mm.clickBuffer.setKeyContext(kctx.key, kctx)
+			}
+		case signals.NoteHold:
+		case signals.NoteReleased:
+			{
+				signal := signals.NoteReleased{kctx.key,
+					kctx.velocity}
+				signal_sequence = append(signal_sequence, signal)
+				// DELETE KEY FROM BUFFER
+				delete(mm.clickBuffer.buffer, kctx.key)
+			}
+		case signals.ControlPushed:
+			{
+				signal := signals.ControlPushed{kctx.key,
+					kctx.velocity}
+				signal_sequence = append(signal_sequence, signal)
+				// DELETE KEY FROM BUFFER
+				delete(mm.clickBuffer.buffer, kctx.key)
+			}
 		}
 	}
-	return nil
+	return signal_sequence
 }
 
 func (mm *MidiManipulator) Run(config config.MIDIConfig, signals chan<- core.Signal, shutdown <-chan bool) {
