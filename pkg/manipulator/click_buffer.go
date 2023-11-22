@@ -1,14 +1,12 @@
 package manipulator
 
-type ClickBuffer struct {
-	buffer map[int]KeyContext
-}
+type ClickBuffer map[uint8]*KeyContext
 
-func (cb *ClickBuffer) getKeyContext(key int) (KeyContext, bool) {
-	val, ok := cb.buffer[key]
+func (cb *ClickBuffer) GetKeyContext(key uint8) (*KeyContext, bool) {
+	val, ok := (*cb)[key]
 	return val, ok
 }
 
-func (cb *ClickBuffer) setKeyContext(key int, midiKey KeyContext) {
-	cb.buffer[key] = midiKey
+func (cb *ClickBuffer) SetKeyContext(key uint8, midiKey KeyContext) {
+	(*cb)[key] = &midiKey
 }

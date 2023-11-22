@@ -11,9 +11,11 @@ import (
 )
 
 type MidiExecutor struct {
-	device       MidiDevice
-	backlightCtx BacklightContext
-	mutex        sync.Mutex
+	device MidiDevice
+	// TODO: Хранить состояние подсветки по клавишам
+	// backlightCtx    BacklightContext
+	backlightConfig config.BacklightConfig
+	mutex           sync.Mutex
 }
 
 type MidiDevice struct {
@@ -25,112 +27,108 @@ type MidiPorts struct {
 	out *drivers.Out
 }
 
-func (me *MidiExecutor) StartupIllumination(config config.MIDIConfig) {
-	outPort := me.getPortsByDeviceName(config.DeviceName)
-
-	if outPort == nil {
-		return
-	}
-
-	me.connectDevice(outPort)
-
-	me.illuminate(config)
-}
-
-func (me *MidiExecutor) TurnLightOn(cmd commands.TurnLightOnCommand, config config.MIDIConfig) {
-	outPort := me.getPortsByDeviceName(config.DeviceName)
-
-	if outPort == nil {
-		return
-	}
-
-	me.connectDevice(outPort)
-
+func (me *MidiExecutor) TurnLightOn(cmd commands.TurnLightOnCommand) {
 	msg := me.getTurnLightOnMessage(cmd.KeyCode)
-	if msg != nil {
+	if msg != nil && me.device.ports.out != nil {
 		(*me.device.ports.out).Send(msg)
 	}
 }
 
-func (me *MidiExecutor) TurnLightOff(cmd commands.TurnLightOffCommand, config config.MIDIConfig) {
-	outPort := me.getPortsByDeviceName(config.DeviceName)
-
-	if outPort == nil {
-		return
-	}
-
-	me.connectDevice(outPort)
-
+func (me *MidiExecutor) TurnLightOff(cmd commands.TurnLightOffCommand) {
 	msg := me.getTurnLightOffMessage(cmd.KeyCode)
-	if msg != nil {
+	if msg != nil && me.device.ports.out != nil {
 		(*me.device.ports.out).Send(msg)
 	}
 }
 
-func (me *MidiExecutor) getTurnLightOnMessage(keyCode int) midi.Message {
-	var msg midi.Message
-	if keyCode >= 59 && keyCode <= 87 {
-		msg = midi.Message{145, byte(keyCode), 2}
-	} else if keyCode >= 0 && keyCode <= 3 {
-		msg = midi.Message{177, byte(keyCode), 127}
-	}
-	return msg
-}
+func (me *MidiExecutor) startupIllumination(config config.MIDIConfig) {
+	if config.DeviceName == "MPD226" {
+		// AKAI MPD226 DIV'S
+		for i := 0; i < 4; i++ {
+			msg := me.getTurnLightOnMessage(i)
+			time.Sleep(time.Millisecond * 50)
+			(*me.device.ports.out).Send(msg)
+		}
 
-func (me *MidiExecutor) getTurnLightOffMessage(keyCode int) midi.Message {
-	var msg midi.Message
-	if keyCode >= 59 && keyCode <= 87 {
-		msg = midi.Message{129, byte(keyCode), 2}
-	} else if keyCode >= 0 && keyCode <= 3 {
-		msg = midi.Message{177, byte(keyCode), 0}
-	}
-	return msg
-}
+		for i := 0; i < 4; i++ {
+			msg := me.getTurnLightOffMessage(i)
+			time.Sleep(time.Millisecond * 50)
+			(*me.device.ports.out).Send(msg)
+		}
 
-func (me *MidiExecutor) illuminate(config config.MIDIConfig) {
-	// AKAI MPD226 DIV'S
-	for i := 0; i < 4; i++ {
-		msg := midi.Message{177, byte(i), 127}
-		time.Sleep(time.Millisecond * 50)
-		(*me.device.ports.out).Send(msg)
-	}
+		// AKAI MPD226 PADS
+		for i := 60; i < 88; i++ {
+			msg := me.getTurnLightOnMessage(i)
+			time.Sleep(time.Millisecond * 50)
+			(*me.device.ports.out).Send(msg)
+		}
 
-	for i := 0; i < 4; i++ {
-		msg := midi.Message{177, byte(i), 0}
-		time.Sleep(time.Millisecond * 50)
-		(*me.device.ports.out).Send(msg)
-	}
-
-	// AKAI MPD226 PADS
-	for i := 60; i < 88; i++ {
-		msg := midi.Message{145, byte(i), 4}
-		time.Sleep(time.Millisecond * 50)
-		(*me.device.ports.out).Send(msg)
-	}
-
-	for i := 60; i < 88; i++ {
-		msg := midi.Message{129, byte(i), 2}
-		time.Sleep(time.Millisecond * 50)
-		(*me.device.ports.out).Send(msg)
+		for i := 60; i < 88; i++ {
+			msg := me.getTurnLightOffMessage(i)
+			time.Sleep(time.Millisecond * 50)
+			(*me.device.ports.out).Send(msg)
+		}
 	}
 }
 
-func (me *MidiExecutor) getPortsByDeviceName(deviceName string) drivers.Out {
+func (me *MidiExecutor) initializeDevice(config config.MIDIConfig) error {
+	outPort, err := me.getPortsByDeviceName(config.DeviceName)
+
+	if outPort == nil || err != nil {
+		return err
+	}
+
+	err = me.connectDevice(outPort)
+
+	if err != nil {
+		return err
+	}
+
+	err = me.applyConfiguration(config)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (me *MidiExecutor) getPortsByDeviceName(deviceName string) (drivers.Out, error) {
 	outPort, err := midi.FindOutPort(deviceName)
 
 	if err != nil {
 		log.Println("Output port was not found")
-		return nil
+		return nil, err
 	}
 
-	return outPort
+	return outPort, nil
 }
 
-func (me *MidiExecutor) connectDevice(outPort drivers.Out) {
+func (me *MidiExecutor) connectDevice(outPort drivers.Out) error {
 	port, err := midi.OutPort(outPort.Number())
+	if err != nil {
+		return err
+	}
+
+	me.device.ports.out = &port
+	return nil
+}
+
+func (me *MidiExecutor) applyConfiguration(cfg config.MIDIConfig) error {
+	backlightConfig, err := config.InitBacklightConfig(cfg.DeviceName)
+	if err != nil {
+		return err
+	}
+
+	me.backlightConfig = *backlightConfig
+	return nil
+}
+
+func (me *MidiExecutor) Run(config config.MIDIConfig) {
+	err := me.initializeDevice(config)
+
 	if err != nil {
 		return
 	}
 
-	me.device.ports.out = &port
+	me.startupIllumination(config)
 }

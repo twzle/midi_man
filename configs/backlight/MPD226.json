@@ -1,0 +1,582 @@
+{ "backlight": [
+  {
+    "key": 0,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "ControlChange",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "ControlChange",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 1,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "ControlChange",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "ControlChange",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 2,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "ControlChange",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "ControlChange",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 3,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "ControlChange",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "ControlChange",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 59,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 60,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 61,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 62,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 63,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 64,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 65,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 66,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 67,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 68,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 69,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 69,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 70,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 71,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 72,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 73,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 74,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 75,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 76,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 77,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 78,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 79,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 80,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 81,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 82,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 83,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 84,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 85,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 86,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  },
+  {
+    "key": 87,
+    "is_rgb": false,
+    "has_multiple_colors": false,
+    "statuses": {
+      "on": {
+        "type": "NoteOn",
+        "channel": 1,
+        "velocity": 127
+      },
+      "off": {
+        "type": "NoteOff",
+        "channel": 1,
+        "velocity": 0
+      }
+    }
+  }
+]
+}
+

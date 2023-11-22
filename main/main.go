@@ -43,7 +43,7 @@ func setupApp(cfg *config.Config) {
 	}
 
 	midiExecutorInstance := midiExecutor.MidiExecutor{}
-	go midiExecutorInstance.StartupIllumination(cfg.MIDIConfig)
+	go midiExecutorInstance.Run(cfg.MIDIConfig)
 
 	signals := make(chan core.Signal)
 	app := hubman.NewAgentApp(
@@ -60,13 +60,13 @@ func setupApp(cfg *config.Config) {
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd commands.TurnLightOnCommand
 					parser(&cmd)
-					midiExecutorInstance.TurnLightOn(cmd, cfg.MIDIConfig)
+					midiExecutorInstance.TurnLightOn(cmd)
 				}),
 			hubman.WithCommand(commands.TurnLightOffCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd commands.TurnLightOffCommand
 					parser(&cmd)
-					midiExecutorInstance.TurnLightOff(cmd, cfg.MIDIConfig)
+					midiExecutorInstance.TurnLightOff(cmd)
 				}),
 			hubman.WithCommand(commands.SingleBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
