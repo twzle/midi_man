@@ -90,6 +90,4 @@ func setupApp(cfg *config.Config) {
 	go midiManipulatorInstance.Run(cfg.MIDIConfig, signals, shutdown)
 
 	<-app.WaitShutdown()
-
-	return
 }
