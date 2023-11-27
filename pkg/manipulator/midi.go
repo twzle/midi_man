@@ -13,10 +13,10 @@ import (
 )
 
 type MidiManipulator struct {
-	device    MidiDevice
-	keyCtx    KeyContext
-	holdDelta time.Duration
-	mutex     sync.Mutex
+	device      MidiDevice
+	clickBuffer ClickBuffer
+	holdDelta   time.Duration
+	mutex       sync.Mutex
 }
 
 type MidiDevice struct {
@@ -25,8 +25,7 @@ type MidiDevice struct {
 }
 
 type MidiPorts struct {
-	in  drivers.In
-	out drivers.Out
+	in *drivers.In
 }
 
 func (mm *MidiManipulator) setHoldDelta(delta float64) {
@@ -37,62 +36,33 @@ func (mm *MidiManipulator) setDeviceName(deviceName string) {
 	mm.device.name = deviceName
 }
 
-func (mm *MidiManipulator) getPortsByDeviceName(deviceName string) (drivers.In, drivers.Out) {
+func (mm *MidiManipulator) getPortsByDeviceName(deviceName string) drivers.In {
 	inPort, err := midi.FindInPort(deviceName)
 	if err != nil {
 		log.Println("Input port was not found")
-		return nil, nil
+		return nil
 	}
 
-	outPort, err := midi.FindOutPort(deviceName)
-	if err != nil {
-		log.Println("Output port was not found")
-		return nil, nil
-	}
-
-	return inPort, outPort
+	return inPort
 }
 
 func (mm *MidiManipulator) applyConfiguration(config config.MIDIConfig) {
 	mm.setDeviceName(config.DeviceName)
 	mm.setHoldDelta(config.HoldDelta)
+	mm.clickBuffer = make(map[uint8]*KeyContext)
 }
 
-func (mm *MidiManipulator) connectDevice(inPort drivers.In, outPort drivers.Out) {
-	mm.device.ports.in, _ = midi.InPort(inPort.Number())
-	mm.device.ports.out, _ = midi.OutPort(outPort.Number())
-}
-
-func (mm *MidiManipulator) startupIllumination() {
-	// AKAI MPD226 DIV'S
-	for i := 0; i < 4; i++ {
-		msg := midi.Message{177, byte(i), 127}
-		time.Sleep(time.Millisecond * 50)
-		mm.device.ports.out.Send(msg)
+func (mm *MidiManipulator) connectDevice(inPort drivers.In) {
+	port, err := midi.InPort(inPort.Number())
+	if err != nil {
+		return
 	}
 
-	for i := 0; i < 4; i++ {
-		msg := midi.Message{177, byte(i), 0}
-		time.Sleep(time.Millisecond * 50)
-		mm.device.ports.out.Send(msg)
-	}
-
-	// AKAI MPD226 PADS
-	for i := 60; i < 88; i++ {
-		msg := midi.Message{145, byte(i), 4}
-		time.Sleep(time.Millisecond * 50)
-		mm.device.ports.out.Send(msg)
-	}
-
-	for i := 60; i < 88; i++ {
-		msg := midi.Message{129, byte(i), 2}
-		time.Sleep(time.Millisecond * 50)
-		mm.device.ports.out.Send(msg)
-	}
+	mm.device.ports.in = &port
 }
 
 func (mm *MidiManipulator) listen(signals chan<- core.Signal, shutdown <-chan bool) {
-	stop, err := midi.ListenTo(mm.device.ports.in, mm.getMidiMessage, midi.UseSysEx())
+	stop, err := midi.ListenTo(*mm.device.ports.in, mm.getMidiMessage, midi.UseSysEx())
 
 	if err != nil {
 		log.Printf("ERROR: %s\n", err)
@@ -100,20 +70,22 @@ func (mm *MidiManipulator) listen(signals chan<- core.Signal, shutdown <-chan bo
 	}
 
 	for {
-		signal := mm.messageToSignal()
+		signalSequence := mm.messageToSignal()
 		select {
 		case <-shutdown:
 			stop()
 			return
 		default:
-			mm.sendSignal(signals, signal)
+			for _, signal := range signalSequence {
+				mm.sendSignal(signals, signal)
+			}
 		}
 	}
 }
 
 func (mm *MidiManipulator) sendSignal(signals chan<- core.Signal, signal core.Signal) {
 	if signal != nil {
-		log.Printf("%s, %f\n", signal.Code(), signal)
+		log.Printf("%s, %d\n", signal.Code(), signal)
 		signals <- signal
 	}
 }
@@ -121,91 +93,70 @@ func (mm *MidiManipulator) sendSignal(signals chan<- core.Signal, signal core.Si
 func (mm *MidiManipulator) getMidiMessage(msg midi.Message, timestamps int32) {
 	mm.mutex.Lock()
 	defer mm.mutex.Unlock()
-	var bt []byte
 	var channel, key, velocity uint8
 	switch {
-	case msg.GetAfterTouch(&channel, &velocity):
-		return
-	case msg.GetSysEx(&bt):
-		return
 	case msg.GetNoteOn(&channel, &key, &velocity):
-		// Бан одновременного нажатия множества клавиш
-		if !mm.keyCtx.isPreviousKeyActive() {
-			mm.keyCtx.setCurrentKey(MidiKey{float64(key), float64(velocity), time.Now(),
-				signals.NotePushed{float64(key), float64(velocity)}})
-		}
+		// NIL STATUS
+		kctx := KeyContext{key, velocity, time.Now(),
+			nil}
+		mm.clickBuffer.SetKeyContext(key, kctx)
 	case msg.GetNoteOff(&channel, &key, &velocity):
-		if float64(key) == mm.keyCtx.currentKey.getKeyCode() {
-			mm.keyCtx.currentKey.setStatus(signals.NoteReleased{float64(key), float64(velocity)})
+		// NOTE RELEASED STATUS
+		val, ok := mm.clickBuffer.GetKeyContext(key)
+		if ok {
+			val.status = signals.NoteReleased{int(key), int(velocity)}
+			//mm.clickBuffer.SetKeyContext(key, val)
 		}
 	case msg.GetControlChange(&channel, &key, &velocity):
-		// Бан одновременного нажатия множества клавиш
-		if !mm.keyCtx.isPreviousKeyActive() {
-			mm.keyCtx.setCurrentKey(MidiKey{float64(key), float64(velocity), time.Now(),
-				signals.ControlPushed{float64(key), float64(velocity)}})
-		}
+		// CONTROL PUSHED STATUS
+		kctx := KeyContext{key, velocity, time.Now(),
+			signals.ControlPushed{int(key), int(velocity)}}
+		mm.clickBuffer.SetKeyContext(key, kctx)
 	}
 }
 
-func (mm *MidiManipulator) messageToSignal() core.Signal {
+func (mm *MidiManipulator) messageToSignal() []core.Signal {
 	mm.mutex.Lock()
 	defer mm.mutex.Unlock()
-	var signal core.Signal
-	if !mm.keyCtx.compareKeys() {
-		mm.keyCtx.setPreviousKey(MidiKey{mm.keyCtx.currentKey.getKeyCode(),
-			mm.keyCtx.currentKey.getVelocity(),
-			mm.keyCtx.currentKey.getUsedAt(),
-			nil})
-	}
-	switch mm.keyCtx.currentKey.status.(type) {
-	case signals.NotePushed:
-		if time.Now().Sub(mm.keyCtx.currentKey.getUsedAt()) >= mm.holdDelta {
-			mm.keyCtx.currentKey.setStatus(signals.NoteHold{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()})
-			return nil
-		}
-		if !mm.keyCtx.compareStatuses() {
-			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.NotePushed{float64(mm.keyCtx.currentKey.getKeyCode()),
-				mm.keyCtx.currentKey.getVelocity()}
-			return signal
-		}
-	case signals.NoteHold:
-		if !mm.keyCtx.compareStatuses() {
-			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.NoteHold{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()}
-			return signal
-		}
-	case signals.NoteReleased:
-		if !mm.keyCtx.compareStatuses() {
-			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.NoteReleased{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()}
-			return signal
-		}
-	case signals.ControlPushed:
-		if !mm.keyCtx.compareStatuses() {
-			mm.keyCtx.previousKey.setStatus(mm.keyCtx.currentKey.getStatus())
-			signal = signals.ControlPushed{mm.keyCtx.currentKey.getKeyCode(),
-				mm.keyCtx.currentKey.getVelocity()}
-			return signal
+	var signalSequence []core.Signal
+	for _, kctx := range mm.clickBuffer {
+		switch kctx.status.(type) {
+		case nil:
+			signal := signals.NotePushed{int(kctx.key), int(kctx.velocity)}
+			signalSequence = append(signalSequence, signal)
+			// UPDATE KEY STATUS IN BUFFER
+			kctx.status = signal
+		case signals.NotePushed:
+			if time.Now().Sub(kctx.usedAt) >= mm.holdDelta {
+				signal := signals.NoteHold{int(kctx.key), int(kctx.velocity)}
+				signalSequence = append(signalSequence, signal)
+				// UPDATE KEY STATUS IN BUFFER
+				kctx.status = signal
+			}
+		case signals.NoteReleased:
+			signal := signals.NoteReleased{int(kctx.key),
+				int(kctx.velocity)}
+			signalSequence = append(signalSequence, signal)
+			// DELETE KEY FROM BUFFER
+			delete(mm.clickBuffer, kctx.key)
+		case signals.ControlPushed:
+			signal := signals.ControlPushed{int(kctx.key),
+				int(kctx.velocity)}
+			signalSequence = append(signalSequence, signal)
+			// DELETE KEY FROM BUFFER
+			delete(mm.clickBuffer, kctx.key)
 		}
 	}
-	return nil
+	return signalSequence
 }
 
 func (mm *MidiManipulator) Run(config config.MIDIConfig, signals chan<- core.Signal, shutdown <-chan bool) {
-	defer midi.CloseDriver()
-	inPort, outPort := mm.getPortsByDeviceName(config.DeviceName)
-	if inPort == nil || outPort == nil {
+	inPort := mm.getPortsByDeviceName(config.DeviceName)
+	if inPort == nil {
 		return
 	}
 
 	mm.applyConfiguration(config)
-	mm.connectDevice(inPort, outPort)
-	defer mm.device.ports.in.Close()
-	defer mm.device.ports.out.Close()
-	mm.startupIllumination()
+	mm.connectDevice(inPort)
 	mm.listen(signals, shutdown)
 }

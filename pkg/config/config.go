@@ -1,30 +1,35 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"net"
 	"os"
 )
 
 type RedisConfig struct {
-	URL string `yaml:"url"`
+	URL string `json:"url"`
 }
 
-type ManpulatorConfig struct {
-	IPAddr string `yaml:"host"`
-	Port   uint16 `yaml:"port"`
+type AppConfig struct {
+	IPAddr string `json:"host"`
+	Port   uint16 `json:"port"`
+}
+
+type ExecutorConfig struct {
+	IPAddr string `json:"host"`
+	Port   uint16 `json:"port"`
 }
 
 type MIDIConfig struct {
-	DeviceName string  `yaml:"device_name"`
-	HoldDelta  float64 `yaml:"hold_delta"`
+	DeviceName string  `json:"device_name"`
+	HoldDelta  float64 `json:"hold_delta"`
 }
 
 type Config struct {
-	RedisConfig      RedisConfig      `yaml:"redis"`
-	ManpulatorConfig ManpulatorConfig `yaml:"manipulator"`
-	MIDIConfig       MIDIConfig       `yaml:"midi"`
+	RedisConfig RedisConfig `json:"redis"`
+	AppConfig   AppConfig   `json:"app"`
+	MIDIConfig  MIDIConfig  `json:"midi"`
 }
 
 func (conf *Config) Validate() error {
@@ -36,13 +41,13 @@ func (conf *Config) Validate() error {
 		return fmt.Errorf("valid MIDI hold_delta must be provided in config. Now {%s} is provided",
 			conf.MIDIConfig.DeviceName)
 	}
-	if conf.ManpulatorConfig.Port == 0 {
+	if conf.AppConfig.Port == 0 {
 		return fmt.Errorf("valid manipulator agent port must be provided in config. Now {%d} is provided",
-			conf.ManpulatorConfig.Port)
+			conf.AppConfig.Port)
 	}
-	if manipulatorIP := net.ParseIP(conf.ManpulatorConfig.IPAddr); manipulatorIP == nil {
+	if manipulatorIP := net.ParseIP(conf.AppConfig.IPAddr); manipulatorIP == nil {
 		return fmt.Errorf("valid manipulator agent ip must be provided in config. Now {%s} is provided",
-			conf.ManpulatorConfig.IPAddr)
+			conf.AppConfig.IPAddr)
 	}
 	if conf.RedisConfig.URL == "" {
 		return fmt.Errorf("valid Redis url must be provided in config. Now {%s} is provided",
@@ -52,24 +57,18 @@ func (conf *Config) Validate() error {
 }
 
 func InitConfig(confPath string) (*Config, error) {
-	yFile, err := os.ReadFile(confPath)
+	jsonFile, err := os.ReadFile(confPath)
 	if err != nil {
 		return nil, err
 	}
-	cfg := Config{}
-
-	err = yaml.Unmarshal(yFile, &cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+	cfg, err := ParseConfigFromBytes(jsonFile)
+	return cfg, err
 }
 
 func ParseConfigFromBytes(data []byte) (*Config, error) {
 	cfg := Config{}
 
-	err := yaml.Unmarshal(data, &cfg)
+	err := json.Unmarshal(data, &cfg)
 	if err != nil {
 		return nil, err
 	}
