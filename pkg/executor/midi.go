@@ -12,10 +12,7 @@ import (
 
 type MidiExecutor struct {
 	device MidiDevice
-	// TODO: Хранить состояние подсветки по клавишам
-	// backlightCtx    BacklightContext
-	backlightConfig config.BacklightConfig
-	mutex           sync.Mutex
+	mutex  sync.Mutex
 }
 
 type MidiDevice struct {
@@ -84,12 +81,6 @@ func (me *MidiExecutor) initializeDevice(config config.MIDIConfig) error {
 		return err
 	}
 
-	err = me.applyConfiguration(config)
-
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 func (me *MidiExecutor) getPortsByDeviceName(deviceName string) (drivers.Out, error) {
@@ -110,16 +101,6 @@ func (me *MidiExecutor) connectDevice(outPort drivers.Out) error {
 	}
 
 	me.device.ports.out = &port
-	return nil
-}
-
-func (me *MidiExecutor) applyConfiguration(cfg config.MIDIConfig) error {
-	backlightConfig, err := config.InitBacklightConfig(cfg.DeviceName)
-	if err != nil {
-		return err
-	}
-
-	me.backlightConfig = *backlightConfig
 	return nil
 }
 
