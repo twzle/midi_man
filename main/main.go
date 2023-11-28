@@ -38,12 +38,12 @@ func setupApp(cfg *config.Config) {
 			},
 			RedisUrl: cfg.RedisConfig.URL,
 		},
-		User:            cfg.MIDIConfig,
+		User:            cfg.MidiConfig,
 		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
 
 	midiExecutorInstance := midiExecutor.MidiExecutor{}
-	go midiExecutorInstance.Run(cfg.MIDIConfig)
+	go midiExecutorInstance.Run(cfg.MidiConfig)
 
 	signals := make(chan core.Signal)
 	app := hubman.NewAgentApp(
@@ -60,13 +60,13 @@ func setupApp(cfg *config.Config) {
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd commands.TurnLightOnCommand
 					parser(&cmd)
-					midiExecutorInstance.TurnLightOn(cmd)
+					midiExecutorInstance.TurnLightOnHandler(cmd)
 				}),
 			hubman.WithCommand(commands.TurnLightOffCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd commands.TurnLightOffCommand
 					parser(&cmd)
-					midiExecutorInstance.TurnLightOff(cmd)
+					midiExecutorInstance.TurnLightOffHandler(cmd)
 				}),
 			hubman.WithCommand(commands.SingleBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
@@ -87,7 +87,7 @@ func setupApp(cfg *config.Config) {
 	shutdown := app.WaitShutdown()
 
 	midiManipulatorInstance := midiManipulator.MidiManipulator{}
-	go midiManipulatorInstance.Run(cfg.MIDIConfig, signals, shutdown)
+	go midiManipulatorInstance.Run(cfg.MidiConfig, signals, shutdown)
 
 	<-app.WaitShutdown()
 }

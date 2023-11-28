@@ -6,9 +6,15 @@
     "host": "127.0.0.1",
     "port": 8094
   },
-  "midi": {
-    "device_name": "MPD226",
-    "hold_delta": 1
-  }
+  "midi_devices": [
+    {
+      "device_name": "MPD226",
+      "hold_delta": 1
+    },
+    {
+      "device_name": "MIDIOUT4 (MPD226)",
+      "hold_delta": 1
+    }
+  ]
 }
 

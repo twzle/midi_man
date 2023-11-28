@@ -1,8 +1,9 @@
 package signals
 
 type NotePushed struct {
-	KeyCode  int `hubman:"key_code"`
-	Velocity int `hubman:"velocity"`
+	Device   string `hubman:"device"`
+	KeyCode  int    `hubman:"key_code"`
+	Velocity int    `hubman:"velocity"`
 }
 
 func (c NotePushed) Code() string {
@@ -14,8 +15,9 @@ func (c NotePushed) Description() string {
 }
 
 type NoteHold struct {
-	KeyCode  int `hubman:"key_code"`
-	Velocity int `hubman:"velocity"`
+	Device   string `hubman:"device"`
+	KeyCode  int    `hubman:"key_code"`
+	Velocity int    `hubman:"velocity"`
 }
 
 func (c NoteHold) Code() string {
@@ -27,8 +29,9 @@ func (c NoteHold) Description() string {
 }
 
 type NoteReleased struct {
-	KeyCode  int `hubman:"key_code"`
-	Velocity int `hubman:"velocity"`
+	Device   string `hubman:"device"`
+	KeyCode  int    `hubman:"key_code"`
+	Velocity int    `hubman:"velocity"`
 }
 
 func (c NoteReleased) Code() string {
@@ -42,8 +45,9 @@ func (c NoteReleased) Description() string {
 // ControlPushed В MIDI Control имеет только один тип событий "ControlChange",
 // поэтому длительность и конец нажатия здесь не отслеживаются
 type ControlPushed struct {
-	KeyCode int `hubman:"key_code"`
-	Value   int `hubman:"velocity"`
+	Device  string `hubman:"device"`
+	KeyCode int    `hubman:"key_code"`
+	Value   int    `hubman:"velocity"`
 }
 
 func (c ControlPushed) Code() string {
