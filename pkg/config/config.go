@@ -34,8 +34,9 @@ type Config struct {
 
 func (conf *Config) Validate() error {
 	if len(conf.MidiConfig) == 0 {
-		return fmt.Errorf("MIDI devices were not found in configuration file")
+		fmt.Println("MIDI devices were not found in configuration file")
 	}
+	// TODO: check all devices are unique, and fail on system property
 	for idx, device := range conf.MidiConfig {
 		if device.DeviceName == "" {
 			return fmt.Errorf("device #{%d} ({%s}): "+

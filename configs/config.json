@@ -10,10 +10,6 @@
     {
       "device_name": "MPD226",
       "hold_delta": 1
-    },
-    {
-      "device_name": "MIDIOUT4 (MPD226)",
-      "hold_delta": 1
     }
   ]
 }

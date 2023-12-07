@@ -1,4 +1,16 @@
-package commands
+package utils
+
+type MidiCommand struct {
+	KeyCode int `hubman:"key_code"`
+}
+
+func (c MidiCommand) Code() string {
+	return "MidiCommand"
+}
+
+func (c MidiCommand) Description() string {
+	return "Template MIDI command description"
+}
 
 type TurnLightOnCommand struct {
 	KeyCode int `hubman:"key_code"`

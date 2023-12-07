@@ -6,12 +6,11 @@ import (
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"git.miem.hse.ru/hubman/hubman-lib/executor"
 	"gitlab.com/gomidi/midi/v2"
+	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 	"log"
-	"midi_manipulator/pkg/commands"
 	"midi_manipulator/pkg/config"
-	midiExecutor "midi_manipulator/pkg/executor"
-	midiManipulator "midi_manipulator/pkg/manipulator"
-	midiSignals "midi_manipulator/pkg/signals"
+	core2 "midi_manipulator/pkg/core"
+	midiSignals "midi_manipulator/pkg/utils"
 	"net"
 )
 
@@ -30,6 +29,8 @@ func main() {
 }
 
 func setupApp(cfg *config.Config) {
+	deviceManager := core2.DeviceManager{}
+
 	agentConf := core.AgentConfiguration{
 		System: &core.SystemConfig{
 			Server: &core.InterfaceConfig{
@@ -42,9 +43,6 @@ func setupApp(cfg *config.Config) {
 		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
 
-	midiExecutorInstance := midiExecutor.MidiExecutor{}
-	go midiExecutorInstance.Run(cfg.MidiConfig)
-
 	signals := make(chan core.Signal)
 	app := hubman.NewAgentApp(
 		agentConf,
@@ -56,38 +54,37 @@ func setupApp(cfg *config.Config) {
 			hubman.WithChannel(signals),
 		),
 		hubman.WithExecutor(
-			hubman.WithCommand(commands.TurnLightOnCommand{},
+			hubman.WithCommand(midiSignals.TurnLightOnCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd commands.TurnLightOnCommand
+					var cmd midiSignals.TurnLightOnCommand
 					parser(&cmd)
-					midiExecutorInstance.TurnLightOnHandler(cmd)
+					deviceManager.TurnLightOnHandler(cmd)
 				}),
-			hubman.WithCommand(commands.TurnLightOffCommand{},
+			hubman.WithCommand(midiSignals.TurnLightOffCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd commands.TurnLightOffCommand
+					var cmd midiSignals.TurnLightOffCommand
 					parser(&cmd)
-					midiExecutorInstance.TurnLightOffHandler(cmd)
+					deviceManager.TurnLightOffHandler(cmd)
 				}),
-			hubman.WithCommand(commands.SingleBlinkCommand{},
+			hubman.WithCommand(midiSignals.SingleBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd commands.SingleBlinkCommand
-					parser(&cmd)
-				}),
-			hubman.WithCommand(commands.SingleReversedBlinkCommand{},
-				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd commands.SingleReversedBlinkCommand
+					var cmd midiSignals.SingleBlinkCommand
 					parser(&cmd)
 				}),
-			hubman.WithCommand(commands.ContinuousBlinkCommand{},
+			hubman.WithCommand(midiSignals.SingleReversedBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd commands.ContinuousBlinkCommand
+					var cmd midiSignals.SingleReversedBlinkCommand
+					parser(&cmd)
+				}),
+			hubman.WithCommand(midiSignals.ContinuousBlinkCommand{},
+				func(command core.SerializedCommand, parser executor.CommandParser) {
+					var cmd midiSignals.ContinuousBlinkCommand
 					parser(&cmd)
 				})),
 	)
 	shutdown := app.WaitShutdown()
 
-	midiManipulatorInstance := midiManipulator.MidiManipulator{}
-	go midiManipulatorInstance.Run(cfg.MidiConfig, signals, shutdown)
+	go deviceManager.Run(cfg.MidiConfig, signals, shutdown)
 
 	<-app.WaitShutdown()
 }

@@ -1,4 +1,4 @@
-package manipulator
+package core
 
 type ClickBuffer map[uint8]*KeyContext
 

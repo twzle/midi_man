@@ -1,4 +1,4 @@
-package signals
+package utils
 
 type NotePushed struct {
 	Device   string `hubman:"device"`

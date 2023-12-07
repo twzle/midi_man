@@ -1,4 +1,4 @@
-package executor
+package utils
 
 import (
 	"gitlab.com/gomidi/midi/v2"
@@ -16,6 +16,6 @@ func GetTurnLightOffMessage(keyCode int) midi.Message {
 }
 
 func GetTurnLightOnMessage(keyCode int) midi.Message {
-	msg := midi.Message{byte(NoteOnCode), byte(keyCode), byte(0)}
+	msg := midi.Message{byte(NoteOnCode), byte(keyCode), byte(127)}
 	return msg
 }

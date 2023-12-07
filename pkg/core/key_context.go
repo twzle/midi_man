@@ -1,4 +1,4 @@
-package manipulator
+package core
 
 import (
 	"git.miem.hse.ru/hubman/hubman-lib/core"
