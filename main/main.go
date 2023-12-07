@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"git.miem.hse.ru/hubman/hubman-lib"
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"git.miem.hse.ru/hubman/hubman-lib/executor"
@@ -81,6 +82,19 @@ func setupApp(cfg *config.Config) {
 					var cmd midiSignals.ContinuousBlinkCommand
 					parser(&cmd)
 				})),
+		hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
+			update, ok := configuration.User.([]config.MidiConfig)
+			if !ok {
+				panic(
+					fmt.Sprintf(
+						"Refresh config error: expected type %T, received %T",
+						config.MidiConfig{},
+						configuration.User,
+					),
+				)
+			}
+			deviceManager.UpdateDevices(update)
+		}),
 	)
 	shutdown := app.WaitShutdown()
 

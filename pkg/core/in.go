@@ -86,6 +86,9 @@ func (md *MidiDevice) listen(signals chan<- core.Signal, shutdown <-chan bool) {
 	for {
 		signalSequence := md.messageToSignal()
 		select {
+		case <-md.stop:
+			stop()
+			return
 		case <-shutdown:
 			stop()
 			return

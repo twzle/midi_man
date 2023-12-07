@@ -18,6 +18,7 @@ type MidiDevice struct {
 	clickBuffer ClickBuffer
 	holdDelta   time.Duration
 	mutex       sync.Mutex
+	stop        chan bool
 }
 
 type MidiPorts struct {
@@ -34,6 +35,10 @@ func (md *MidiDevice) SetActive() {
 }
 
 func (md *MidiDevice) ExecuteCommand(command utils.MidiCommand) error {
+	return nil
+}
+
+func (md *MidiDevice) StopDevice() error {
 	return nil
 }
 
