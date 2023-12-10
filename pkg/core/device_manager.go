@@ -99,7 +99,7 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.MidiConfig) {
 
 	for _, deviceConfig := range midiConfigMap {
 		if _, found := dm.devices[deviceConfig.DeviceName]; !found {
-			device, err := dm.NewDevice(deviceConfig)
+			device, err := NewDevice(deviceConfig)
 
 			if err != nil {
 				continue
@@ -121,18 +121,6 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.MidiConfig) {
 			}
 		}
 	}
-}
-
-func (dm *DeviceManager) NewDevice(deviceConfig config.MidiConfig) (*MidiDevice, error) {
-	midiDevice := MidiDevice{}
-	midiDevice.applyConfiguration(deviceConfig)
-
-	err := midiDevice.connectDevice()
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return &midiDevice, nil
 }
 
 func (dm *DeviceManager) SetShutdownChannel(shutdown <-chan bool) {

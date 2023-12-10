@@ -110,3 +110,15 @@ func (md *MidiDevice) applyConfiguration(config config.MidiConfig) {
 	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
 	md.clickBuffer = make(map[uint8]*KeyContext)
 }
+
+func NewDevice(deviceConfig config.MidiConfig) (*MidiDevice, error) {
+	midiDevice := MidiDevice{}
+	midiDevice.applyConfiguration(deviceConfig)
+
+	err := midiDevice.connectDevice()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return &midiDevice, nil
+}
