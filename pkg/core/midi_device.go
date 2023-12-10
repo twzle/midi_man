@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"gitlab.com/gomidi/midi/v2"
 	"gitlab.com/gomidi/midi/v2/drivers"
 	"log"
@@ -35,10 +36,27 @@ func (md *MidiDevice) SetActive() {
 }
 
 func (md *MidiDevice) ExecuteCommand(command utils.MidiCommand) error {
+	switch v := command.(type) {
+	case utils.TurnLightOnCommand:
+		md.turnLightOn(command.(utils.TurnLightOnCommand))
+	case utils.TurnLightOffCommand:
+		md.turnLightOff(command.(utils.TurnLightOffCommand))
+	default:
+		fmt.Printf("Unknown command with type: \"%T\"\n", v)
+	}
 	return nil
 }
 
 func (md *MidiDevice) StopDevice() error {
+	fmt.Printf("MIDI DEVICE {%s} STOPPING ...\n", md.name)
+	md.stop <- true
+	return nil
+}
+
+func (md *MidiDevice) RunDevice(signals chan<- core.Signal, shutdown <-chan bool) error {
+	fmt.Printf("MIDI DEVICE {%s} CONNECTING ...\n", md.name)
+	go md.startupIllumination()
+	go md.listen(signals, shutdown)
 	return nil
 }
 
@@ -48,13 +66,12 @@ func (md *MidiDevice) connectDevice() error {
 	out_err := md.connectOutPort()
 
 	if in_err != nil || out_err != nil {
-		err = fmt.Errorf("Connection of device \"{%s}\" failed\n", md.name)
+		err = fmt.Errorf("connection of device \"{%s}\" failed", md.name)
 	}
 	return err
 }
 
 func (md *MidiDevice) connectOutPort() error {
-	fmt.Println(midi.GetOutPorts())
 	port, err := midi.FindOutPort(md.name)
 	if err != nil {
 		log.Printf("Output port named {%s} was not found\n", md.name)
@@ -72,7 +89,6 @@ func (md *MidiDevice) connectOutPort() error {
 }
 
 func (md *MidiDevice) connectInPort() error {
-	fmt.Println(midi.GetInPorts())
 	port, err := midi.FindInPort(md.name)
 	if err != nil {
 		log.Printf("Input port named {%s} was not found", md.name)

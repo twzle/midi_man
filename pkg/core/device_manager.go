@@ -15,7 +15,21 @@ type DeviceManager struct {
 	devices  map[string]*MidiDevice
 	mutex    sync.Mutex
 	shutdown <-chan bool
-	signals  chan<- core.Signal
+	signals  chan core.Signal
+}
+
+func (dm *DeviceManager) ExecuteCommand(cmd utils.MidiCommand) {
+	for _, device := range dm.devices {
+		if device.active {
+			err := dm.ExecuteOnDevice(device.GetAlias(), cmd)
+
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+	}
+
 }
 
 func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
@@ -27,7 +41,12 @@ func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
 
 	dm.devices[device.GetAlias()] = device
 
-	dm.runDevice(device)
+	err := device.RunDevice(dm.signals, dm.shutdown)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -38,11 +57,13 @@ func (dm *DeviceManager) RemoveDevice(alias string) error {
 	}
 
 	err := device.StopDevice()
+
 	if err != nil {
 		return err
 	}
 
 	delete(dm.devices, alias)
+
 	return nil
 }
 
@@ -60,14 +81,6 @@ func (dm *DeviceManager) SetActiveDevice(alias string) error {
 }
 
 func (dm *DeviceManager) ExecuteOnDevice(alias string, command utils.MidiCommand) error {
-	if _, found := dm.devices[alias]; !found {
-		return fmt.Errorf("device {%s} doesn't exist", alias)
-	}
-
-	if dm.devices[alias].active {
-		return fmt.Errorf("device {%s} is already active", alias)
-	}
-
 	err := dm.devices[alias].ExecuteCommand(command)
 
 	if err != nil {
@@ -78,46 +91,39 @@ func (dm *DeviceManager) ExecuteOnDevice(alias string, command utils.MidiCommand
 }
 
 func (dm *DeviceManager) UpdateDevices(midiConfig []config.MidiConfig) {
-	for _, deviceConfig := range midiConfig {
+	var midiConfigMap = make(map[string]config.MidiConfig)
+
+	for _, device := range midiConfig {
+		midiConfigMap[device.DeviceName] = device
+	}
+
+	for _, deviceConfig := range midiConfigMap {
 		if _, found := dm.devices[deviceConfig.DeviceName]; !found {
-			device, err := dm.initializeDevice(deviceConfig)
+			device, err := dm.NewDevice(deviceConfig)
 
 			if err != nil {
-				return
+				continue
 			}
 
 			err = dm.AddDevice(device)
 
 			if err != nil {
-				return
+				continue
 			}
-
-			dm.runDevice(device)
 		}
 	}
 
 	for _, device := range dm.devices {
-		var found = false
-
-		for _, v := range midiConfig {
-			if v.DeviceName == device.GetAlias() {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			dm.stopDevice(device)
+		if _, found := midiConfigMap[device.GetAlias()]; !found {
 			err := dm.RemoveDevice(device.GetAlias())
 			if err != nil {
-				return
+				continue
 			}
 		}
-
 	}
 }
 
-func (dm *DeviceManager) initializeDevice(deviceConfig config.MidiConfig) (*MidiDevice, error) {
+func (dm *DeviceManager) NewDevice(deviceConfig config.MidiConfig) (*MidiDevice, error) {
 	midiDevice := MidiDevice{}
 	midiDevice.applyConfiguration(deviceConfig)
 
@@ -129,33 +135,19 @@ func (dm *DeviceManager) initializeDevice(deviceConfig config.MidiConfig) (*Midi
 	return &midiDevice, nil
 }
 
-func (dm *DeviceManager) runDevice(device *MidiDevice) {
-	fmt.Printf("MIDI DEVICE {%s} RUNNING ...\n", device.name)
-	device.startupIllumination()
-	go device.listen(dm.signals, dm.shutdown)
-}
-
-func (dm *DeviceManager) stopDevice(device *MidiDevice) {
-	fmt.Printf("MIDI DEVICE {%s} STOPPING ...\n", device.name)
-	device.stop <- true
-}
-
-func (dm *DeviceManager) Run(config []config.MidiConfig, signals chan<- core.Signal, shutdown <-chan bool) {
-	dm.devices = make(map[string]*MidiDevice)
+func (dm *DeviceManager) SetShutdownChannel(shutdown <-chan bool) {
 	dm.shutdown = shutdown
-	dm.signals = signals
+}
 
-	for _, deviceConfig := range config {
-		device, err := dm.initializeDevice(deviceConfig)
+func (dm *DeviceManager) GetSignals() chan core.Signal {
+	return dm.signals
+}
 
-		if err != nil {
-			return
-		}
+func NewDeviceManager() *DeviceManager {
+	dm := DeviceManager{}
+	dm.devices = make(map[string]*MidiDevice)
+	dm.signals = make(chan core.Signal)
+	dm.shutdown = nil
 
-		err = dm.AddDevice(device)
-
-		if err != nil {
-			return
-		}
-	}
+	return &dm
 }

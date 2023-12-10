@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"git.miem.hse.ru/hubman/hubman-lib"
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"git.miem.hse.ru/hubman/hubman-lib/executor"
@@ -11,7 +10,7 @@ import (
 	"log"
 	"midi_manipulator/pkg/config"
 	core2 "midi_manipulator/pkg/core"
-	midiSignals "midi_manipulator/pkg/utils"
+	"midi_manipulator/pkg/utils"
 	"net"
 )
 
@@ -30,7 +29,7 @@ func main() {
 }
 
 func setupApp(cfg *config.Config) {
-	deviceManager := core2.DeviceManager{}
+	deviceManager := core2.NewDeviceManager()
 
 	agentConf := core.AgentConfiguration{
 		System: &core.SystemConfig{
@@ -44,61 +43,56 @@ func setupApp(cfg *config.Config) {
 		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
 
-	signals := make(chan core.Signal)
+	signals := deviceManager.GetSignals()
 	app := hubman.NewAgentApp(
 		agentConf,
 		hubman.WithManipulator(
-			hubman.WithSignal[midiSignals.NotePushed](),
-			hubman.WithSignal[midiSignals.NoteHold](),
-			hubman.WithSignal[midiSignals.NoteReleased](),
-			hubman.WithSignal[midiSignals.ControlPushed](),
+			hubman.WithSignal[utils.NotePushed](),
+			hubman.WithSignal[utils.NoteHold](),
+			hubman.WithSignal[utils.NoteReleased](),
+			hubman.WithSignal[utils.ControlPushed](),
 			hubman.WithChannel(signals),
 		),
 		hubman.WithExecutor(
-			hubman.WithCommand(midiSignals.TurnLightOnCommand{},
+			hubman.WithCommand(utils.TurnLightOnCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd midiSignals.TurnLightOnCommand
+					var cmd utils.TurnLightOnCommand
 					parser(&cmd)
-					deviceManager.TurnLightOnHandler(cmd)
+					deviceManager.ExecuteCommand(cmd)
 				}),
-			hubman.WithCommand(midiSignals.TurnLightOffCommand{},
+			hubman.WithCommand(utils.TurnLightOffCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd midiSignals.TurnLightOffCommand
+					var cmd utils.TurnLightOffCommand
 					parser(&cmd)
-					deviceManager.TurnLightOffHandler(cmd)
+					deviceManager.ExecuteCommand(cmd)
 				}),
-			hubman.WithCommand(midiSignals.SingleBlinkCommand{},
+			hubman.WithCommand(utils.SingleBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd midiSignals.SingleBlinkCommand
+					var cmd utils.SingleBlinkCommand
 					parser(&cmd)
+					deviceManager.ExecuteCommand(cmd)
 				}),
-			hubman.WithCommand(midiSignals.SingleReversedBlinkCommand{},
+			hubman.WithCommand(utils.SingleReversedBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd midiSignals.SingleReversedBlinkCommand
+					var cmd utils.SingleReversedBlinkCommand
 					parser(&cmd)
+					deviceManager.ExecuteCommand(cmd)
 				}),
-			hubman.WithCommand(midiSignals.ContinuousBlinkCommand{},
+			hubman.WithCommand(utils.ContinuousBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd midiSignals.ContinuousBlinkCommand
+					var cmd utils.ContinuousBlinkCommand
 					parser(&cmd)
+					deviceManager.ExecuteCommand(cmd)
 				})),
 		hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
-			update, ok := configuration.User.([]config.MidiConfig)
-			if !ok {
-				panic(
-					fmt.Sprintf(
-						"Refresh config error: expected type %T, received %T",
-						config.MidiConfig{},
-						configuration.User,
-					),
-				)
-			}
+			update, _ := configuration.User.([]config.MidiConfig)
 			deviceManager.UpdateDevices(update)
 		}),
 	)
 	shutdown := app.WaitShutdown()
 
-	go deviceManager.Run(cfg.MidiConfig, signals, shutdown)
+	deviceManager.SetShutdownChannel(shutdown)
+	go deviceManager.UpdateDevices(cfg.MidiConfig)
 
 	<-app.WaitShutdown()
 }
