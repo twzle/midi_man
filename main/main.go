@@ -30,6 +30,7 @@ func main() {
 
 func setupApp(cfg *config.Config) {
 	deviceManager := core2.NewDeviceManager()
+	//defer deviceManager.Close()
 
 	agentConf := core.AgentConfiguration{
 		System: &core.SystemConfig{
@@ -58,31 +59,46 @@ func setupApp(cfg *config.Config) {
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd utils.TurnLightOnCommand
 					parser(&cmd)
-					deviceManager.ExecuteCommand(cmd)
+					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+					if err != nil {
+						log.Println(err)
+					}
 				}),
 			hubman.WithCommand(utils.TurnLightOffCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd utils.TurnLightOffCommand
 					parser(&cmd)
-					deviceManager.ExecuteCommand(cmd)
+					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+					if err != nil {
+						log.Println(err)
+					}
 				}),
 			hubman.WithCommand(utils.SingleBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd utils.SingleBlinkCommand
 					parser(&cmd)
-					deviceManager.ExecuteCommand(cmd)
+					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+					if err != nil {
+						log.Println(err)
+					}
 				}),
 			hubman.WithCommand(utils.SingleReversedBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd utils.SingleReversedBlinkCommand
 					parser(&cmd)
-					deviceManager.ExecuteCommand(cmd)
+					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+					if err != nil {
+						log.Println(err)
+					}
 				}),
 			hubman.WithCommand(utils.ContinuousBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
 					var cmd utils.ContinuousBlinkCommand
 					parser(&cmd)
-					deviceManager.ExecuteCommand(cmd)
+					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+					if err != nil {
+						log.Println(err)
+					}
 				})),
 		hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
 			update, _ := configuration.User.([]config.MidiConfig)

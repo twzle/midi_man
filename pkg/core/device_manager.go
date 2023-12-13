@@ -11,28 +11,44 @@ import (
 )
 
 type DeviceManager struct {
-	io.Closer
+	closer   io.Closer
 	devices  map[string]*MidiDevice
 	mutex    sync.Mutex
 	shutdown <-chan bool
 	signals  chan core.Signal
 }
 
-func (dm *DeviceManager) ExecuteCommand(cmd utils.MidiCommand) {
-	for _, device := range dm.devices {
-		if device.active {
-			err := dm.ExecuteOnDevice(device.GetAlias(), cmd)
+func (dm *DeviceManager) Close() {
+	err := dm.closer.Close()
 
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-		}
+	if err != nil {
+		return
+	}
+}
+
+func (dm *DeviceManager) ExecuteOnDevice(alias string, cmd utils.MidiCommand) error {
+	device, found := dm.devices[alias]
+
+	if !found {
+		return fmt.Errorf("device with alias {%s} doesn't exist", alias)
 	}
 
+	if !device.active {
+		return fmt.Errorf("device with alias {%s} is not active", alias)
+	}
+
+	err := device.ExecuteCommand(cmd)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
+	dm.mutex.Lock()
+
 	_, found := dm.devices[device.GetAlias()]
 
 	if found {
@@ -47,10 +63,14 @@ func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
 		return err
 	}
 
+	dm.mutex.Unlock()
+
 	return nil
 }
 
 func (dm *DeviceManager) RemoveDevice(alias string) error {
+	dm.mutex.Lock()
+
 	device, found := dm.devices[alias]
 	if !found {
 		return fmt.Errorf("device {%s} doesn't exist", device.GetAlias())
@@ -64,28 +84,7 @@ func (dm *DeviceManager) RemoveDevice(alias string) error {
 
 	delete(dm.devices, alias)
 
-	return nil
-}
-
-func (dm *DeviceManager) SetActiveDevice(alias string) error {
-	if _, found := dm.devices[alias]; !found {
-		return fmt.Errorf("device {%s} doesn't exist", alias)
-	}
-
-	if dm.devices[alias].active {
-		return fmt.Errorf("device {%s} is already active", alias)
-	}
-
-	dm.devices[alias].SetActive()
-	return nil
-}
-
-func (dm *DeviceManager) ExecuteOnDevice(alias string, command utils.MidiCommand) error {
-	err := dm.devices[alias].ExecuteCommand(command)
-
-	if err != nil {
-		return err
-	}
+	dm.mutex.Unlock()
 
 	return nil
 }
@@ -98,18 +97,21 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.MidiConfig) {
 	}
 
 	for _, deviceConfig := range midiConfigMap {
-		if _, found := dm.devices[deviceConfig.DeviceName]; !found {
-			device, err := NewDevice(deviceConfig)
+		device, found := dm.devices[deviceConfig.DeviceName]
+		if !found {
+			newDevice, err := NewDevice(deviceConfig)
 
 			if err != nil {
 				continue
 			}
 
-			err = dm.AddDevice(device)
+			err = dm.AddDevice(newDevice)
 
 			if err != nil {
 				continue
 			}
+		} else {
+			device.updateConfiguration(deviceConfig)
 		}
 	}
 

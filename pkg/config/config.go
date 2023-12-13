@@ -23,6 +23,7 @@ type ExecutorConfig struct {
 
 type MidiConfig struct {
 	DeviceName string  `json:"device_name"`
+	Active     bool    `json:"active"`
 	HoldDelta  float64 `json:"hold_delta"`
 }
 

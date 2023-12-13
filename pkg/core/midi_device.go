@@ -31,10 +31,6 @@ func (md *MidiDevice) GetAlias() string {
 	return md.name
 }
 
-func (md *MidiDevice) SetActive() {
-	md.active = true
-}
-
 func (md *MidiDevice) ExecuteCommand(command utils.MidiCommand) error {
 	switch v := command.(type) {
 	case utils.TurnLightOnCommand:
@@ -107,8 +103,14 @@ func (md *MidiDevice) connectInPort() error {
 
 func (md *MidiDevice) applyConfiguration(config config.MidiConfig) {
 	md.name = config.DeviceName
+	md.active = config.Active
 	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
 	md.clickBuffer = make(map[uint8]*KeyContext)
+}
+
+func (md *MidiDevice) updateConfiguration(config config.MidiConfig) {
+	md.active = config.Active
+	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
 }
 
 func NewDevice(deviceConfig config.MidiConfig) (*MidiDevice, error) {
