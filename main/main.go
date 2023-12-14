@@ -9,8 +9,8 @@ import (
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 	"log"
 	"midi_manipulator/pkg/config"
-	core2 "midi_manipulator/pkg/core"
-	"midi_manipulator/pkg/utils"
+	midiHermophrodite "midi_manipulator/pkg/midi"
+	"midi_manipulator/pkg/model"
 	"net"
 )
 
@@ -29,7 +29,7 @@ func main() {
 }
 
 func setupApp(cfg *config.Config) {
-	deviceManager := core2.NewDeviceManager()
+	deviceManager := midiHermophrodite.NewDeviceManager()
 	defer deviceManager.Close()
 
 	agentConf := core.AgentConfiguration{
@@ -44,56 +44,58 @@ func setupApp(cfg *config.Config) {
 		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
 
+	deviceManager.UpdateDevices(cfg.MidiConfig)
 	signals := deviceManager.GetSignals()
+
 	app := hubman.NewAgentApp(
 		agentConf,
 		hubman.WithManipulator(
-			hubman.WithSignal[utils.NotePushed](),
-			hubman.WithSignal[utils.NoteHold](),
-			hubman.WithSignal[utils.NoteReleased](),
-			hubman.WithSignal[utils.ControlPushed](),
+			hubman.WithSignal[model.NotePushed](),
+			hubman.WithSignal[model.NoteHold](),
+			hubman.WithSignal[model.NoteReleased](),
+			hubman.WithSignal[model.ControlPushed](),
 			hubman.WithChannel(signals),
 		),
 		hubman.WithExecutor(
-			hubman.WithCommand(utils.TurnLightOnCommand{},
+			hubman.WithCommand(model.TurnLightOnCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd utils.TurnLightOnCommand
+					var cmd model.TurnLightOnCommand
 					parser(&cmd)
 					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					if err != nil {
 						log.Println(err)
 					}
 				}),
-			hubman.WithCommand(utils.TurnLightOffCommand{},
+			hubman.WithCommand(model.TurnLightOffCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd utils.TurnLightOffCommand
+					var cmd model.TurnLightOffCommand
 					parser(&cmd)
 					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					if err != nil {
 						log.Println(err)
 					}
 				}),
-			hubman.WithCommand(utils.SingleBlinkCommand{},
+			hubman.WithCommand(model.SingleBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd utils.SingleBlinkCommand
+					var cmd model.SingleBlinkCommand
 					parser(&cmd)
 					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					if err != nil {
 						log.Println(err)
 					}
 				}),
-			hubman.WithCommand(utils.SingleReversedBlinkCommand{},
+			hubman.WithCommand(model.SingleReversedBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd utils.SingleReversedBlinkCommand
+					var cmd model.SingleReversedBlinkCommand
 					parser(&cmd)
 					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					if err != nil {
 						log.Println(err)
 					}
 				}),
-			hubman.WithCommand(utils.ContinuousBlinkCommand{},
+			hubman.WithCommand(model.ContinuousBlinkCommand{},
 				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd utils.ContinuousBlinkCommand
+					var cmd model.ContinuousBlinkCommand
 					parser(&cmd)
 					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					if err != nil {
@@ -105,10 +107,5 @@ func setupApp(cfg *config.Config) {
 			deviceManager.UpdateDevices(update)
 		}),
 	)
-	shutdown := app.WaitShutdown()
-
-	deviceManager.SetShutdownChannel(shutdown)
-	go deviceManager.UpdateDevices(cfg.MidiConfig)
-
 	<-app.WaitShutdown()
 }

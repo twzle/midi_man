@@ -1,4 +1,4 @@
-package utils
+package model
 
 type MidiCommand interface {
 	Code() string

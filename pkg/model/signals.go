@@ -1,4 +1,4 @@
-package utils
+package model
 
 type NotePushed struct {
 	Device   string `hubman:"device"`
@@ -6,11 +6,11 @@ type NotePushed struct {
 	Velocity int    `hubman:"velocity"`
 }
 
-func (c NotePushed) Code() string {
+func (s NotePushed) Code() string {
 	return "NotePushed"
 }
 
-func (c NotePushed) Description() string {
+func (s NotePushed) Description() string {
 	return "NotePushed - signal represents state of key with 'Note' type right off it was pressed on a device"
 }
 
@@ -20,11 +20,11 @@ type NoteHold struct {
 	Velocity int    `hubman:"velocity"`
 }
 
-func (c NoteHold) Code() string {
+func (s NoteHold) Code() string {
 	return "NoteHold"
 }
 
-func (c NoteHold) Description() string {
+func (s NoteHold) Description() string {
 	return "NoteHold - signal represents state of key with 'Note' type that is pressed for long"
 }
 
@@ -34,11 +34,11 @@ type NoteReleased struct {
 	Velocity int    `hubman:"velocity"`
 }
 
-func (c NoteReleased) Code() string {
+func (s NoteReleased) Code() string {
 	return "NoteReleased"
 }
 
-func (c NoteReleased) Description() string {
+func (s NoteReleased) Description() string {
 	return "NoteReleased - signal represents state of key with 'Note' type right off it was released on a device"
 }
 
@@ -50,10 +50,10 @@ type ControlPushed struct {
 	Value   int    `hubman:"velocity"`
 }
 
-func (c ControlPushed) Code() string {
+func (s ControlPushed) Code() string {
 	return "ControlPushed"
 }
 
-func (c ControlPushed) Description() string {
+func (s ControlPushed) Description() string {
 	return "ControlPushed - signal represents state of key with 'Control' type right off it was pressed on a device"
 }

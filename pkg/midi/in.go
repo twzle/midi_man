@@ -1,10 +1,10 @@
-package core
+package midi
 
 import (
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"gitlab.com/gomidi/midi/v2"
 	"log"
-	"midi_manipulator/pkg/utils"
+	"midi_manipulator/pkg/model"
 	"time"
 )
 
@@ -29,13 +29,13 @@ func (md *MidiDevice) getMidiMessage(msg midi.Message, timestamps int32) {
 		// NOTE RELEASED STATUS
 		val, ok := md.clickBuffer.GetKeyContext(key)
 		if ok {
-			val.status = utils.NoteReleased{md.name, int(key), int(velocity)}
+			val.status = model.NoteReleased{md.name, int(key), int(velocity)}
 			//mm.clickBuffer.SetKeyContext(key, val)
 		}
 	case msg.GetControlChange(&channel, &key, &velocity):
 		// CONTROL PUSHED STATUS
 		kctx := KeyContext{key, velocity, time.Now(),
-			utils.ControlPushed{md.name, int(key), int(velocity)}}
+			model.ControlPushed{md.name, int(key), int(velocity)}}
 		md.clickBuffer.SetKeyContext(key, kctx)
 	}
 }
@@ -47,25 +47,25 @@ func (md *MidiDevice) messageToSignal() []core.Signal {
 	for _, kctx := range md.clickBuffer {
 		switch kctx.status.(type) {
 		case nil:
-			signal := utils.NotePushed{md.name, int(kctx.key), int(kctx.velocity)}
+			signal := model.NotePushed{md.name, int(kctx.key), int(kctx.velocity)}
 			signalSequence = append(signalSequence, signal)
 			// UPDATE KEY STATUS IN BUFFER
 			kctx.status = signal
-		case utils.NotePushed:
+		case model.NotePushed:
 			if time.Now().Sub(kctx.usedAt) >= md.holdDelta {
-				signal := utils.NoteHold{md.name, int(kctx.key), int(kctx.velocity)}
+				signal := model.NoteHold{md.name, int(kctx.key), int(kctx.velocity)}
 				signalSequence = append(signalSequence, signal)
 				// UPDATE KEY STATUS IN BUFFER
 				kctx.status = signal
 			}
-		case utils.NoteReleased:
-			signal := utils.NoteReleased{md.name, int(kctx.key),
+		case model.NoteReleased:
+			signal := model.NoteReleased{md.name, int(kctx.key),
 				int(kctx.velocity)}
 			signalSequence = append(signalSequence, signal)
 			// DELETE KEY FROM BUFFER
 			delete(md.clickBuffer, kctx.key)
-		case utils.ControlPushed:
-			signal := utils.ControlPushed{md.name, int(kctx.key),
+		case model.ControlPushed:
+			signal := model.ControlPushed{md.name, int(kctx.key),
 				int(kctx.velocity)}
 			signalSequence = append(signalSequence, signal)
 			// DELETE KEY FROM BUFFER
@@ -75,7 +75,7 @@ func (md *MidiDevice) messageToSignal() []core.Signal {
 	return signalSequence
 }
 
-func (md *MidiDevice) listen(signals chan<- core.Signal, shutdown <-chan bool) {
+func (md *MidiDevice) listen(signals chan<- core.Signal) {
 	stop, err := midi.ListenTo(*md.ports.in, md.getMidiMessage, midi.UseSysEx())
 
 	if err != nil {

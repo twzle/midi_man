@@ -1,4 +1,4 @@
-package core
+package midi
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"gitlab.com/gomidi/midi/v2/drivers"
 	"log"
 	"midi_manipulator/pkg/config"
-	"midi_manipulator/pkg/utils"
+	"midi_manipulator/pkg/model"
 	"sync"
 	"time"
 )
@@ -31,12 +31,12 @@ func (md *MidiDevice) GetAlias() string {
 	return md.name
 }
 
-func (md *MidiDevice) ExecuteCommand(command utils.MidiCommand) error {
+func (md *MidiDevice) ExecuteCommand(command model.MidiCommand) error {
 	switch v := command.(type) {
-	case utils.TurnLightOnCommand:
-		md.turnLightOn(command.(utils.TurnLightOnCommand))
-	case utils.TurnLightOffCommand:
-		md.turnLightOff(command.(utils.TurnLightOffCommand))
+	case model.TurnLightOnCommand:
+		md.turnLightOn(command.(model.TurnLightOnCommand))
+	case model.TurnLightOffCommand:
+		md.turnLightOff(command.(model.TurnLightOffCommand))
 	default:
 		fmt.Printf("Unknown command with type: \"%T\"\n", v)
 	}
@@ -44,15 +44,15 @@ func (md *MidiDevice) ExecuteCommand(command utils.MidiCommand) error {
 }
 
 func (md *MidiDevice) StopDevice() error {
-	fmt.Printf("MIDI DEVICE {%s} STOPPING ...\n", md.name)
+	log.Printf("MIDI DEVICE {%s} STOPPING ...\n", md.name)
 	md.stop <- true
 	return nil
 }
 
-func (md *MidiDevice) RunDevice(signals chan<- core.Signal, shutdown <-chan bool) error {
-	fmt.Printf("MIDI DEVICE {%s} CONNECTING ...\n", md.name)
+func (md *MidiDevice) RunDevice(signals chan<- core.Signal) error {
+	log.Printf("MIDI DEVICE {%s} CONNECTING ...\n", md.name)
 	go md.startupIllumination()
-	go md.listen(signals, shutdown)
+	go md.listen(signals)
 	return nil
 }
 

@@ -1,4 +1,4 @@
-package core
+package midi
 
 import (
 	"git.miem.hse.ru/hubman/hubman-lib/core"
