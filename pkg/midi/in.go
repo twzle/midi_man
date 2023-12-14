@@ -29,13 +29,13 @@ func (md *MidiDevice) getMidiMessage(msg midi.Message, timestamps int32) {
 		// NOTE RELEASED STATUS
 		val, ok := md.clickBuffer.GetKeyContext(key)
 		if ok {
-			val.status = model.NoteReleased{md.name, int(key), int(velocity)}
+			val.status = model.NoteReleased{Device: md.name, KeyCode: int(key), Velocity: int(velocity)}
 			//mm.clickBuffer.SetKeyContext(key, val)
 		}
 	case msg.GetControlChange(&channel, &key, &velocity):
 		// CONTROL PUSHED STATUS
-		kctx := KeyContext{key, velocity, time.Now(),
-			model.ControlPushed{md.name, int(key), int(velocity)}}
+		kctx := KeyContext{key: key, velocity: velocity, usedAt: time.Now(),
+			status: model.ControlPushed{Device: md.name, KeyCode: int(key), Value: int(velocity)}}
 		md.clickBuffer.SetKeyContext(key, kctx)
 	}
 }
@@ -47,26 +47,26 @@ func (md *MidiDevice) messageToSignal() []core.Signal {
 	for _, kctx := range md.clickBuffer {
 		switch kctx.status.(type) {
 		case nil:
-			signal := model.NotePushed{md.name, int(kctx.key), int(kctx.velocity)}
+			signal := model.NotePushed{Device: md.name, KeyCode: int(kctx.key), Velocity: int(kctx.velocity)}
 			signalSequence = append(signalSequence, signal)
 			// UPDATE KEY STATUS IN BUFFER
 			kctx.status = signal
 		case model.NotePushed:
 			if time.Now().Sub(kctx.usedAt) >= md.holdDelta {
-				signal := model.NoteHold{md.name, int(kctx.key), int(kctx.velocity)}
+				signal := model.NoteHold{Device: md.name, KeyCode: int(kctx.key), Velocity: int(kctx.velocity)}
 				signalSequence = append(signalSequence, signal)
 				// UPDATE KEY STATUS IN BUFFER
 				kctx.status = signal
 			}
 		case model.NoteReleased:
-			signal := model.NoteReleased{md.name, int(kctx.key),
-				int(kctx.velocity)}
+			signal := model.NoteReleased{Device: md.name, KeyCode: int(kctx.key),
+				Velocity: int(kctx.velocity)}
 			signalSequence = append(signalSequence, signal)
 			// DELETE KEY FROM BUFFER
 			delete(md.clickBuffer, kctx.key)
 		case model.ControlPushed:
-			signal := model.ControlPushed{md.name, int(kctx.key),
-				int(kctx.velocity)}
+			signal := model.ControlPushed{Device: md.name, KeyCode: int(kctx.key),
+				Value: int(kctx.velocity)}
 			signalSequence = append(signalSequence, signal)
 			// DELETE KEY FROM BUFFER
 			delete(md.clickBuffer, kctx.key)
