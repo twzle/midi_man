@@ -100,13 +100,10 @@ func (dm *DeviceManager) RemoveDevice(alias string) error {
 
 func (dm *DeviceManager) UpdateDevices(midiConfig []config.MidiConfig) {
 	var midiConfigMap = make(map[string]config.MidiConfig)
-	defer dm.mutex.Unlock()
 
-	dm.mutex.Lock()
 	for _, device := range midiConfig {
 		midiConfigMap[device.DeviceName] = device
 	}
-	dm.mutex.Unlock()
 
 	for _, deviceConfig := range midiConfigMap {
 		device, found := dm.getDevice(deviceConfig.DeviceName)
@@ -128,9 +125,7 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.MidiConfig) {
 	}
 
 	for _, device := range dm.devices {
-		dm.mutex.Lock()
 		if _, found := midiConfigMap[device.GetAlias()]; !found {
-			dm.mutex.Unlock()
 			err := dm.RemoveDevice(device.GetAlias())
 			if err != nil {
 				continue
