@@ -5,13 +5,14 @@ import (
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	_ "gitlab.com/gomidi/midi/v2"
 	"io"
+	"log"
 	"midi_manipulator/pkg/config"
 	"midi_manipulator/pkg/utils"
 	"sync"
 )
 
 type DeviceManager struct {
-	closer   io.Closer
+	io.Closer
 	devices  map[string]*MidiDevice
 	mutex    sync.Mutex
 	shutdown <-chan bool
@@ -19,10 +20,11 @@ type DeviceManager struct {
 }
 
 func (dm *DeviceManager) Close() {
-	err := dm.closer.Close()
-
-	if err != nil {
-		return
+	for _, device := range dm.devices {
+		err := dm.RemoveDevice(device.GetAlias())
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 

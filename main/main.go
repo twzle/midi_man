@@ -30,7 +30,7 @@ func main() {
 
 func setupApp(cfg *config.Config) {
 	deviceManager := core2.NewDeviceManager()
-	//defer deviceManager.Close()
+	defer deviceManager.Close()
 
 	agentConf := core.AgentConfiguration{
 		System: &core.SystemConfig{

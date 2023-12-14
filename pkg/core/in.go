@@ -89,9 +89,6 @@ func (md *MidiDevice) listen(signals chan<- core.Signal, shutdown <-chan bool) {
 		case <-md.stop:
 			stop()
 			return
-		case <-shutdown:
-			stop()
-			return
 		default:
 			for _, signal := range signalSequence {
 				md.sendSignal(signals, signal)

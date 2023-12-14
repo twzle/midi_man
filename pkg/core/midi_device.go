@@ -106,6 +106,7 @@ func (md *MidiDevice) applyConfiguration(config config.MidiConfig) {
 	md.active = config.Active
 	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
 	md.clickBuffer = make(map[uint8]*KeyContext)
+	md.stop = make(chan bool, 1)
 }
 
 func (md *MidiDevice) updateConfiguration(config config.MidiConfig) {
