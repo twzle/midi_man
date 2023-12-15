@@ -98,8 +98,8 @@ func (dm *DeviceManager) RemoveDevice(alias string) error {
 	return nil
 }
 
-func (dm *DeviceManager) UpdateDevices(midiConfig []config.MidiConfig) {
-	var midiConfigMap = make(map[string]config.MidiConfig)
+func (dm *DeviceManager) UpdateDevices(midiConfig []config.DeviceConfig) {
+	var midiConfigMap = make(map[string]config.DeviceConfig)
 
 	for _, device := range midiConfig {
 		midiConfigMap[device.DeviceName] = device

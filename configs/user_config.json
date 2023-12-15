@@ -1,11 +1,4 @@
 {
-  "redis": {
-    "url": "redis://127.0.0.1:6379"
-  },
-  "app": {
-    "host": "127.0.0.1",
-    "port": 8094
-  },
   "midi_devices": [
     {
       "device_name": "MPD226",

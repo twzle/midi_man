@@ -1,7 +1,7 @@
 package main
 
 import (
-	"flag"
+	"fmt"
 	"git.miem.hse.ru/hubman/hubman-lib"
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"git.miem.hse.ru/hubman/hubman-lib/executor"
@@ -11,40 +11,49 @@ import (
 	"midi_manipulator/pkg/config"
 	midiHermophrodite "midi_manipulator/pkg/midi"
 	"midi_manipulator/pkg/model"
-	"net"
 )
 
 func main() {
 	defer midi.CloseDriver()
 
-	configPath := flag.String("conf_path", "configs/config.json", "set configs path")
-	flag.Parse()
+	systemConfig := &core.SystemConfig{}
+	userConfig := &config.UserConfig{}
 
-	cfg, err := config.InitConfig(*configPath)
+	err := core.ReadConfig(systemConfig, userConfig)
+	if err != nil {
+		log.Fatal(fmt.Errorf("error while reading config: %w", err))
+	}
+
+	err = userConfig.Validate()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	setupApp(cfg)
+	err = systemConfig.Validate()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	setupApp(systemConfig, userConfig)
 }
 
-func setupApp(cfg *config.Config) {
+func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	deviceManager := midiHermophrodite.NewDeviceManager()
 	defer deviceManager.Close()
 
 	agentConf := core.AgentConfiguration{
 		System: &core.SystemConfig{
 			Server: &core.InterfaceConfig{
-				IP:   net.ParseIP(cfg.AppConfig.IPAddr),
-				Port: cfg.AppConfig.Port,
+				IP:   systemConfig.Server.IP,
+				Port: systemConfig.Server.Port,
 			},
-			RedisUrl: cfg.RedisConfig.URL,
+			RedisUrl: systemConfig.RedisUrl,
 		},
-		User:            cfg.MidiConfig,
+		User:            userConfig,
 		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
 
-	deviceManager.UpdateDevices(cfg.MidiConfig)
+	deviceManager.UpdateDevices(userConfig.MidiDevices)
 	signals := deviceManager.GetSignals()
 
 	app := hubman.NewAgentApp(
@@ -103,7 +112,7 @@ func setupApp(cfg *config.Config) {
 					}
 				})),
 		hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
-			update, _ := configuration.User.([]config.MidiConfig)
+			update, _ := configuration.User.([]config.DeviceConfig)
 			deviceManager.UpdateDevices(update)
 		}),
 	)
