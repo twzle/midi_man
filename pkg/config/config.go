@@ -1,26 +1,25 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"os"
 )
 
 type DeviceConfig struct {
-	DeviceName string  `json:"device_name"`
-	Active     bool    `json:"active"`
-	HoldDelta  float64 `json:"hold_delta"`
+	DeviceName string  `yaml:"device_name"`
+	Active     bool    `yaml:"active"`
+	HoldDelta  float64 `yaml:"hold_delta"`
 }
 
 type UserConfig struct {
-	MidiDevices []DeviceConfig `json:"midi_devices"`
+	MidiDevices []DeviceConfig `yaml:"midi_devices"`
 }
 
 func (conf *UserConfig) Validate() error {
 	if len(conf.MidiDevices) == 0 {
 		fmt.Println("MIDI devices were not found in configuration file")
 	}
-	// TODO: check all devices are unique, and fail on system property
 	if alias, has := conf.hasDuplicateDevices(); has {
 		return fmt.Errorf("found duplicate MIDI device with alias {%s} in config", alias)
 	}
@@ -66,7 +65,7 @@ func InitConfig(confPath string) (*UserConfig, error) {
 func ParseConfigFromBytes(data []byte) (*UserConfig, error) {
 	cfg := UserConfig{}
 
-	err := json.Unmarshal(data, &cfg)
+	err := yaml.Unmarshal(data, &cfg)
 	if err != nil {
 		return nil, err
 	}
