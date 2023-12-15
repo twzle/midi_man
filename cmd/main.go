@@ -42,13 +42,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	defer deviceManager.Close()
 
 	agentConf := core.AgentConfiguration{
-		System: &core.SystemConfig{
-			Server: &core.InterfaceConfig{
-				IP:   systemConfig.Server.IP,
-				Port: systemConfig.Server.Port,
-			},
-			RedisUrl: systemConfig.RedisUrl,
-		},
+		System:          systemConfig,
 		User:            userConfig,
 		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}

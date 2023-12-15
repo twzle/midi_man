@@ -7,13 +7,13 @@ import (
 )
 
 type DeviceConfig struct {
-	DeviceName string  `yaml:"device_name"`
-	Active     bool    `yaml:"active"`
-	HoldDelta  float64 `yaml:"hold_delta"`
+	DeviceName string  `json:"device_name" yaml:"device_name"`
+	Active     bool    `json:"active" yaml:"active"`
+	HoldDelta  float64 `json:"hold_delta" yaml:"hold_delta"`
 }
 
 type UserConfig struct {
-	MidiDevices []DeviceConfig `yaml:"midi_devices"`
+	MidiDevices []DeviceConfig `json:"midi_devices" yaml:"midi_devices"`
 }
 
 func (conf *UserConfig) Validate() error {
