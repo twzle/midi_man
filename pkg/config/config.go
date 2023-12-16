@@ -1,44 +1,29 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
-	"net"
+	"gopkg.in/yaml.v3"
 	"os"
 )
 
-type RedisConfig struct {
-	URL string `json:"url"`
+type DeviceConfig struct {
+	DeviceName string  `json:"device_name" yaml:"device_name"`
+	Active     bool    `json:"active" yaml:"active"`
+	HoldDelta  float64 `json:"hold_delta" yaml:"hold_delta"`
 }
 
-type AppConfig struct {
-	IPAddr string `json:"host"`
-	Port   uint16 `json:"port"`
+type UserConfig struct {
+	MidiDevices []DeviceConfig `json:"midi_devices" yaml:"midi_devices"`
 }
 
-type ExecutorConfig struct {
-	IPAddr string `json:"host"`
-	Port   uint16 `json:"port"`
-}
-
-type MidiConfig struct {
-	DeviceName string  `json:"device_name"`
-	Active     bool    `json:"active"`
-	HoldDelta  float64 `json:"hold_delta"`
-}
-
-type Config struct {
-	RedisConfig RedisConfig  `json:"redis"`
-	AppConfig   AppConfig    `json:"app"`
-	MidiConfig  []MidiConfig `json:"midi_devices"`
-}
-
-func (conf *Config) Validate() error {
-	if len(conf.MidiConfig) == 0 {
+func (conf *UserConfig) Validate() error {
+	if len(conf.MidiDevices) == 0 {
 		fmt.Println("MIDI devices were not found in configuration file")
 	}
-	// TODO: check all devices are unique, and fail on system property
-	for idx, device := range conf.MidiConfig {
+	if alias, has := conf.hasDuplicateDevices(); has {
+		return fmt.Errorf("found duplicate MIDI device with alias {%s} in config", alias)
+	}
+	for idx, device := range conf.MidiDevices {
 		if device.DeviceName == "" {
 			return fmt.Errorf("device #{%d} ({%s}): "+
 				"valid MIDI device_name must be provided in config. "+
@@ -52,22 +37,23 @@ func (conf *Config) Validate() error {
 				idx, device.DeviceName, device.HoldDelta)
 		}
 	}
-	if conf.AppConfig.Port == 0 {
-		return fmt.Errorf("valid manipulator agent port must be provided in config. Now {%d} is provided",
-			conf.AppConfig.Port)
-	}
-	if manipulatorIP := net.ParseIP(conf.AppConfig.IPAddr); manipulatorIP == nil {
-		return fmt.Errorf("valid manipulator agent ip must be provided in config. Now {%s} is provided",
-			conf.AppConfig.IPAddr)
-	}
-	if conf.RedisConfig.URL == "" {
-		return fmt.Errorf("valid Redis url must be provided in config. Now {%s} is provided",
-			conf.RedisConfig.URL)
-	}
 	return nil
 }
 
-func InitConfig(confPath string) (*Config, error) {
+func (conf *UserConfig) hasDuplicateDevices() (string, bool) {
+	x := make(map[string]struct{})
+
+	for _, v := range conf.MidiDevices {
+		if _, has := x[v.DeviceName]; has {
+			return v.DeviceName, true
+		}
+		x[v.DeviceName] = struct{}{}
+	}
+
+	return "", false
+}
+
+func InitConfig(confPath string) (*UserConfig, error) {
 	jsonFile, err := os.ReadFile(confPath)
 	if err != nil {
 		return nil, err
@@ -76,10 +62,15 @@ func InitConfig(confPath string) (*Config, error) {
 	return cfg, err
 }
 
-func ParseConfigFromBytes(data []byte) (*Config, error) {
-	cfg := Config{}
+func ParseConfigFromBytes(data []byte) (*UserConfig, error) {
+	cfg := UserConfig{}
 
-	err := json.Unmarshal(data, &cfg)
+	err := yaml.Unmarshal(data, &cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cfg.Validate()
 	if err != nil {
 		return nil, err
 	}

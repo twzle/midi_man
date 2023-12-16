@@ -101,7 +101,7 @@ func (md *MidiDevice) connectInPort() error {
 	return nil
 }
 
-func (md *MidiDevice) applyConfiguration(config config.MidiConfig) {
+func (md *MidiDevice) applyConfiguration(config config.DeviceConfig) {
 	md.name = config.DeviceName
 	md.active = config.Active
 	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
@@ -109,12 +109,12 @@ func (md *MidiDevice) applyConfiguration(config config.MidiConfig) {
 	md.stop = make(chan bool, 1)
 }
 
-func (md *MidiDevice) updateConfiguration(config config.MidiConfig) {
+func (md *MidiDevice) updateConfiguration(config config.DeviceConfig) {
 	md.active = config.Active
 	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
 }
 
-func NewDevice(deviceConfig config.MidiConfig) (*MidiDevice, error) {
+func NewDevice(deviceConfig config.DeviceConfig) (*MidiDevice, error) {
 	midiDevice := MidiDevice{}
 	midiDevice.applyConfiguration(deviceConfig)
 
