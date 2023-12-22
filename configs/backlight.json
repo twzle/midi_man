@@ -1,0 +1,877 @@
+{
+  "midi_devices": [
+    {
+      "device_name": "MPD226",
+      "hold_delta": 1,
+      "active": true,
+      "colors": null,
+      "backlight": [
+        {
+          "key": 0,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "ControlChange",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "ControlChange",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 1,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "ControlChange",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "ControlChange",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 2,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "ControlChange",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "ControlChange",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 3,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "ControlChange",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "ControlChange",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 59,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 60,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 61,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 62,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 63,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 64,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 65,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 66,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 67,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 68,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 69,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 69,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 70,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 71,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 72,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 73,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 74,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 75,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 76,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 77,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 78,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 79,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 80,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 81,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 82,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 83,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 84,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 85,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 86,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 87,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "channel": 1,
+              "velocity": 127,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "NoteOff",
+              "channel": 1,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "device_name": "AKAI FIRE",
+      "hold_delta": 1,
+      "active": true,
+      "colors": [
+        {
+          "range": [
+            35,
+            36
+          ],
+          "on": [
+            {
+              "color": "red",
+              "rgb": "7F 00 00"
+            },
+            {
+              "color": "green",
+              "rgb": "00 7F 00"
+            },
+            {
+              "color": "blue",
+              "rgb": "00 00 7F"
+            }
+          ],
+          "off": [
+            {
+              "color": "light_red",
+              "rgb": "3F 00 00"
+            },
+            {
+              "color": "light_green",
+              "rgb": "00 3F 00"
+            },
+            {
+              "color": "light_blue",
+              "rgb": "00 00 3F"
+            }
+          ]
+        }
+      ],
+      "backlight": [
+        {
+          "key": 35,
+          "is_rgb": false,
+          "has_multiple_colors": false,
+          "statuses": {
+            "on": {
+              "type": "Sysex",
+              "channel": null,
+              "velocity": null,
+              "color": "red",
+              "bytes": "47 7F 43 65 00 04 23 %s"
+            },
+            "off": {
+              "type": "Sysex",
+              "channel": null,
+              "velocity": null,
+              "color": "light_red",
+              "bytes": "47 7F 43 65 00 04 23 %s"
+            }
+          }
+        },
+        {
+          "key": 36,
+          "is_rgb": true,
+          "has_multiple_colors": true,
+          "statuses": {
+            "on": {
+              "type": "Sysex",
+              "channel": null,
+              "velocity": null,
+              "color": "blue",
+              "bytes": "47 7F 43 65 00 04 24 %s"
+            },
+            "off": {
+              "type": "Sysex",
+              "channel": null,
+              "velocity": null,
+              "color": "light_blue",
+              "bytes": "47 7F 43 65 00 04 24 %s"
+            }
+          }
+        },
+        {
+          "key": 21,
+          "is_rgb": false,
+          "has_multiple_colors": true,
+          "statuses": {
+            "light_green_on": {
+              "type": "ControlChange",
+              "channel": 0,
+              "velocity": 1,
+              "color": null,
+              "bytes": null
+            },
+            "green_on": {
+              "type": "ControlChange",
+              "channel": 0,
+              "velocity": 2
+            },
+            "off": {
+              "type": "ControlChange",
+              "channel": 0,
+              "velocity": 0,
+              "color": null,
+              "bytes": null
+            }
+          }
+        },
+        {
+          "key": 23,
+          "is_rgb": false,
+          "has_multiple_colors": true,
+          "statuses": {
+            "light_red_on": {
+              "type": "ControlChange",
+              "channel": 0,
+              "velocity": 1,
+              "color": null,
+              "bytes": null
+            },
+            "red_on": {
+              "type": "ControlChange",
+              "channel": 0,
+              "velocity": 2,
+              "color": null,
+              "bytes": null
+            },
+            "light_yellow_on": {
+              "type": "ControlChange",
+              "channel": 0,
+              "velocity": 3,
+              "color": null,
+              "bytes": null
+            },
+            "yellow_on": {
+              "type": "ControlChange",
+              "channel": 0,
+              "velocity": 4,
+              "color": null,
+              "bytes": null
+            },
+            "off": {
+              "type": "ControlChange",
+              "channel": 0,
+              "velocity": 0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
