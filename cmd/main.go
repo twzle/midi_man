@@ -7,6 +7,7 @@ import (
 	"git.miem.hse.ru/hubman/hubman-lib/executor"
 	"gitlab.com/gomidi/midi/v2"
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
+	"go.uber.org/zap"
 	"log"
 	"midi_manipulator/pkg/config"
 	midiHermophrodite "midi_manipulator/pkg/midi"
@@ -38,7 +39,11 @@ func main() {
 }
 
 func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
-	deviceManager := midiHermophrodite.NewDeviceManager()
+	logger, err := zap.NewProduction()
+	if err != nil { // FIXME: use app container api after
+		log.Fatal(err)
+	}
+	deviceManager := midiHermophrodite.NewDeviceManager(logger)
 	defer deviceManager.Close()
 
 	agentConf := core.AgentConfiguration{
@@ -104,7 +109,14 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 					if err != nil {
 						log.Println(err)
 					}
-				})),
+				}),
+			hubman.WithCommand(model.SetActiveNamespaceCommand{},
+				func(s core.SerializedCommand, p executor.CommandParser) {
+					var cmd model.SetActiveNamespaceCommand
+					p(&cmd)
+					deviceManager.SetActiveNamespace(cmd.Namespace, cmd.Device)
+				}),
+		),
 		hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
 			update, _ := configuration.User.([]config.DeviceConfig)
 			deviceManager.UpdateDevices(update)
