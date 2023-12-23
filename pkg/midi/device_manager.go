@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	_ "gitlab.com/gomidi/midi/v2"
+	"go.uber.org/zap"
 	"log"
 	"midi_manipulator/pkg/config"
 	"midi_manipulator/pkg/model"
@@ -14,6 +15,10 @@ type DeviceManager struct {
 	devices map[string]*MidiDevice
 	mutex   sync.Mutex
 	signals chan core.Signal
+	logger  *zap.Logger
+
+	activeNamespace string
+	nmMutex         sync.RWMutex
 }
 
 func (dm *DeviceManager) getDevice(alias string) (*MidiDevice, bool) {
@@ -48,10 +53,12 @@ func (dm *DeviceManager) ExecuteOnDevice(alias string, cmd model.MidiCommand) er
 	device, found := dm.getDevice(alias)
 
 	if !found {
+		dm.logger.Warn("Received command for non existing device", zap.String("device", alias))
 		return fmt.Errorf("device with alias {%s} doesn't exist", alias)
 	}
 
-	if !device.active {
+	if !device.active { // Possibly should be deprecated?
+		dm.logger.Warn("Received command for inactive device", zap.String("device", alias))
 		return fmt.Errorf("device with alias {%s} is not active", alias)
 	}
 
@@ -65,6 +72,7 @@ func (dm *DeviceManager) ExecuteOnDevice(alias string, cmd model.MidiCommand) er
 }
 
 func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
+	dm.logger.Info("Adding device", zap.String("alias", device.GetAlias()))
 	_, found := dm.getDevice(device.GetAlias())
 
 	if found {
@@ -82,6 +90,8 @@ func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
 }
 
 func (dm *DeviceManager) RemoveDevice(alias string) error {
+	dm.logger.Info("Removing device", zap.String("device", alias))
+
 	device, found := dm.getDevice(alias)
 	if !found {
 		return fmt.Errorf("device {%s} doesn't exist", device.GetAlias())
@@ -99,6 +109,7 @@ func (dm *DeviceManager) RemoveDevice(alias string) error {
 }
 
 func (dm *DeviceManager) UpdateDevices(midiConfig []config.DeviceConfig) {
+	dm.logger.Info("Updating devices", zap.Int("deviceCount", len(midiConfig)))
 	var midiConfigMap = make(map[string]config.DeviceConfig)
 
 	for _, device := range midiConfig {
@@ -138,10 +149,22 @@ func (dm *DeviceManager) GetSignals() chan core.Signal {
 	return dm.signals
 }
 
-func NewDeviceManager() *DeviceManager {
-	dm := DeviceManager{}
+func (dm *DeviceManager) SetActiveNamespace(newActive string, device string) {
+	dm.logger.Info("Setting namespace as active", zap.String("namespace", newActive))
+	dm.mutex.Lock()
+	d, ok := dm.devices[device]
+	d.namespace = newActive
+	if !ok {
+		dm.logger.Error("Not found given device for namespace", zap.String("device", device), zap.String("newNamespace", newActive))
+	}
+	dm.mutex.Unlock()
+}
+
+func NewDeviceManager(logger *zap.Logger) *DeviceManager {
+	dm := DeviceManager{logger: logger}
 	dm.devices = make(map[string]*MidiDevice)
 	dm.signals = make(chan core.Signal)
 
+	logger.Info("Created device manager")
 	return &dm
 }

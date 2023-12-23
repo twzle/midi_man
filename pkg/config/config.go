@@ -3,13 +3,13 @@ package config
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 type DeviceConfig struct {
 	DeviceName string  `json:"device_name" yaml:"device_name"`
 	Active     bool    `json:"active" yaml:"active"`
 	HoldDelta  float64 `json:"hold_delta" yaml:"hold_delta"`
+	Namespace  string  `json:"namespace" yaml:"namespace"`
 }
 
 type UserConfig struct {
@@ -29,6 +29,9 @@ func (conf *UserConfig) Validate() error {
 				"valid MIDI device_name must be provided in config. "+
 				"Now {%f} is provided",
 				idx, device.DeviceName, device.HoldDelta)
+		}
+		if device.Namespace == "" {
+			return fmt.Errorf("device #{%d} ({%s}) has no namespace specified", idx, device.DeviceName)
 		}
 		if device.HoldDelta < 0 {
 			return fmt.Errorf("device #{%d} ({%s}): "+
@@ -51,15 +54,6 @@ func (conf *UserConfig) hasDuplicateDevices() (string, bool) {
 	}
 
 	return "", false
-}
-
-func InitConfig(confPath string) (*UserConfig, error) {
-	jsonFile, err := os.ReadFile(confPath)
-	if err != nil {
-		return nil, err
-	}
-	cfg, err := ParseConfigFromBytes(jsonFile)
-	return cfg, err
 }
 
 func ParseConfigFromBytes(data []byte) (*UserConfig, error) {
