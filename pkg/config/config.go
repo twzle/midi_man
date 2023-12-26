@@ -70,10 +70,5 @@ func ParseConfigFromBytes(data []byte) (*UserConfig, error) {
 		return nil, err
 	}
 
-	err = cfg.Validate()
-	if err != nil {
-		return nil, err
-	}
-
 	return &cfg, nil
 }

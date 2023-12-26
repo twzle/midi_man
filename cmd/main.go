@@ -8,6 +8,7 @@ import (
 	"gitlab.com/gomidi/midi/v2"
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 	"log"
+	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	midiHermophrodite "midi_manipulator/pkg/midi"
 	"midi_manipulator/pkg/model"
@@ -19,27 +20,21 @@ func main() {
 	systemConfig := &core.SystemConfig{}
 	userConfig := &config.UserConfig{}
 
+	_, decodedBacklightConfig, _ := backlight.InitConfig("configs/backlight.json")
+
 	err := core.ReadConfig(systemConfig, userConfig)
 	if err != nil {
 		log.Fatal(fmt.Errorf("error while reading config: %w", err))
 	}
 
-	err = userConfig.Validate()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = systemConfig.Validate()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	setupApp(systemConfig, userConfig)
+	setupApp(systemConfig, userConfig, decodedBacklightConfig)
 }
 
-func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
+func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig, backlightConfig *backlight.Decoded_DeviceBacklightConfig) {
 	deviceManager := midiHermophrodite.NewDeviceManager()
 	defer deviceManager.Close()
+
+	deviceManager.SetBacklightConfig(backlightConfig)
 
 	agentConf := core.AgentConfiguration{
 		System:          systemConfig,

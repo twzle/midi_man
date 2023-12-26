@@ -5,15 +5,21 @@ import (
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	_ "gitlab.com/gomidi/midi/v2"
 	"log"
+	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	"midi_manipulator/pkg/model"
 	"sync"
 )
 
 type DeviceManager struct {
-	devices map[string]*MidiDevice
-	mutex   sync.Mutex
-	signals chan core.Signal
+	devices         map[string]*MidiDevice
+	mutex           sync.Mutex
+	signals         chan core.Signal
+	backlightConfig backlight.Decoded_DeviceBacklightConfig
+}
+
+func (dm *DeviceManager) SetBacklightConfig(cfg *backlight.Decoded_DeviceBacklightConfig) {
+	dm.backlightConfig = *cfg
 }
 
 func (dm *DeviceManager) getDevice(alias string) (*MidiDevice, bool) {

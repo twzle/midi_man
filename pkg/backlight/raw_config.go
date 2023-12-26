@@ -1,10 +1,5 @@
 package backlight
 
-import (
-	"encoding/json"
-	"os"
-)
-
 type Raw_Color struct {
 	ColorName string `json:"color_name" yaml:"color_name"`
 	Payload   string `json:"payload" yaml:"payload"`
@@ -41,25 +36,4 @@ type Raw_DeviceBacklightConfig struct {
 
 type Raw_BacklightConfig struct {
 	DeviceBacklightConfigurations []Raw_DeviceBacklightConfig `json:"device_light_configuration" yaml:"device_light_configuration"`
-}
-
-func InitConfig(confPath string) (*Raw_BacklightConfig, error) {
-	jsonFile, err := os.ReadFile(confPath)
-	if err != nil {
-		return nil, err
-	}
-	cfg, err := ParseConfigFromBytes(jsonFile)
-	return cfg, err
-}
-
-func ParseConfigFromBytes(data []byte) (*Raw_BacklightConfig, error) {
-	cfg := Raw_BacklightConfig{}
-
-	err := json.Unmarshal(data, &cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	DecodeConfig(&cfg)
-	return &cfg, nil
 }

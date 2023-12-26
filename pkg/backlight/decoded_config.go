@@ -15,10 +15,10 @@ type Decoded_Mapping struct {
 	bytes      []byte
 }
 
-type Decoded_DeviceBacklightConfigTree struct {
+type Decoded_DeviceBacklightConfig struct {
 	colorSetToValues   map[Decoded_ColorSetIdentifiers]Decoded_Values
 	keyStatusToMapping map[Decoded_KeyStatusIdentifiers]Decoded_Mapping
-	keyBacklightMap    map[byte]Raw_KeyBacklight
+	keyBacklightMap    map[Decoded_KeyBacklightIdentifiers]Raw_KeyBacklight
 }
 
 type Decoded_ColorSetIdentifiers struct {
@@ -32,6 +32,11 @@ type Decoded_KeyStatusIdentifiers struct {
 	DeviceAlias string
 	Key         byte
 	Status      string
+}
+
+type Decoded_KeyBacklightIdentifiers struct {
+	deviceAlias string
+	key         byte
 }
 
 func DecodePayload(payload string) []byte {
@@ -58,8 +63,8 @@ func FindEntryIndex(payload string, token string) int {
 }
 
 func RemoveFormatKeysFromString(payload string) string {
-	payload = strings.Replace(payload, "%payload", "", 1)
-	payload = strings.Replace(payload, "%key", "", 1)
+	payload = strings.Replace(payload, "%payload", "00", 1)
+	payload = strings.Replace(payload, "%key", "00", 1)
 	return payload
 }
 
@@ -72,8 +77,8 @@ func DecodeMapping(byteString string) Decoded_Mapping {
 
 }
 
-func DecodeConfig(cfg *Raw_BacklightConfig) Decoded_DeviceBacklightConfigTree {
-	kbm := make(map[byte]Raw_KeyBacklight)
+func DecodeConfig(cfg *Raw_BacklightConfig) Decoded_DeviceBacklightConfig {
+	kbm := make(map[Decoded_KeyBacklightIdentifiers]Raw_KeyBacklight)
 	cstv := make(map[Decoded_ColorSetIdentifiers]Decoded_Values)
 	kstm := make(map[Decoded_KeyStatusIdentifiers]Decoded_Mapping)
 
@@ -101,8 +106,11 @@ func DecodeConfig(cfg *Raw_BacklightConfig) Decoded_DeviceBacklightConfigTree {
 		}
 
 		for _, backlightRange := range deviceBacklightConfig.KeyboardBacklight {
-			for _, key := range backlightRange.KeyRange {
-				kbm[key] = backlightRange
+			keyRange := backlightRange.KeyRange
+
+			for key := keyRange[0]; key <= keyRange[len(keyRange)-1]; key++ {
+				kbl := Decoded_KeyBacklightIdentifiers{deviceBacklightConfig.DeviceName, key}
+				kbm[kbl] = backlightRange
 
 				ksi := Decoded_KeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
 					key, "on"}
@@ -117,6 +125,6 @@ func DecodeConfig(cfg *Raw_BacklightConfig) Decoded_DeviceBacklightConfigTree {
 			}
 		}
 	}
-	dbct := Decoded_DeviceBacklightConfigTree{cstv, kstm, kbm}
+	dbct := Decoded_DeviceBacklightConfig{cstv, kstm, kbm}
 	return dbct
 }
