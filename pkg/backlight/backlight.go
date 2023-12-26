@@ -1,4 +1,4 @@
-package main
+package backlight
 
 func On(key byte, alias string, color string) {
 	dbct := Decoded_DeviceBacklightConfigTree{}

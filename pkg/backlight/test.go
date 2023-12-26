@@ -1,4 +1,4 @@
-package pkg
+package backlight
 
 import (
 	"encoding/hex"
@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func main() {
+func test() {
 	config, err := InitConfig("backlight.json")
 	if err != nil {
 		fmt.Println(err)
@@ -41,7 +41,7 @@ func GetSysexMsg(templateByteString string, key int, payload string) []byte {
 	return sysexMsg
 }
 
-func GetDeviceBacklightConfig(config *BacklightConfig, deviceAlias string) *DeviceBacklightConfig {
+func GetDeviceBacklightConfig(config *Raw_BacklightConfig, deviceAlias string) *Raw_DeviceBacklightConfig {
 	for _, deviceConfig := range config.DeviceBacklightConfigurations {
 		if deviceConfig.DeviceName == deviceAlias {
 			return &deviceConfig
@@ -50,14 +50,14 @@ func GetDeviceBacklightConfig(config *BacklightConfig, deviceAlias string) *Devi
 	return nil
 }
 
-func GetKeyBacklight(config *DeviceBacklightConfig, key int) *KeyBacklight {
+func GetKeyBacklight(config *Raw_DeviceBacklightConfig, key int) *Raw_KeyBacklight {
 	for _, keyBacklightConfig := range config.KeyboardBacklight {
 		if len(keyBacklightConfig.KeyRange) == 2 {
-			if key >= keyBacklightConfig.KeyRange[0] && key <= keyBacklightConfig.KeyRange[1] {
+			if byte(key) >= keyBacklightConfig.KeyRange[0] && byte(key) <= keyBacklightConfig.KeyRange[byte(1)] {
 				return &keyBacklightConfig
 			}
 		} else if len(keyBacklightConfig.KeyRange) == 1 {
-			if keyBacklightConfig.KeyRange[0] == key {
+			if keyBacklightConfig.KeyRange[0] == byte(key) {
 				return &keyBacklightConfig
 			}
 		}
@@ -65,8 +65,8 @@ func GetKeyBacklight(config *DeviceBacklightConfig, key int) *KeyBacklight {
 	return nil
 }
 
-func GetColor(colorSpace *ColorSpace, colorName string, fallbackColorName string, status string) string {
-	var colorSpaceStatus []Color
+func GetColor(colorSpace *Raw_ColorSpace, colorName string, fallbackColorName string, status string) string {
+	var colorSpaceStatus []Raw_Color
 	if status == "On" {
 		colorSpaceStatus = colorSpace.On
 	} else {
@@ -88,7 +88,7 @@ func GetColor(colorSpace *ColorSpace, colorName string, fallbackColorName string
 	return ""
 }
 
-func GetColorSpace(config *DeviceBacklightConfig, colorSpaceId int) *ColorSpace {
+func GetColorSpace(config *Raw_DeviceBacklightConfig, colorSpaceId int) *Raw_ColorSpace {
 	for _, colorSpace := range config.ColorSpaces {
 		if colorSpace.Id == colorSpaceId {
 			return &colorSpace
@@ -104,7 +104,7 @@ func GetMidiMessage(templateByteString string, key int, payload string) []byte {
 	return cmd
 }
 
-func TurnLightOn(config *BacklightConfig, deviceAlias string, key int, color string) {
+func TurnLightOn(config *Raw_BacklightConfig, deviceAlias string, key int, color string) {
 	deviceBacklightConfig := GetDeviceBacklightConfig(config, deviceAlias)
 
 	if deviceBacklightConfig == nil {
@@ -130,7 +130,7 @@ func TurnLightOn(config *BacklightConfig, deviceAlias string, key int, color str
 	fmt.Println(midiMsg)
 }
 
-func TurnLightOff(config *BacklightConfig, deviceAlias string, key int, color string) {
+func TurnLightOff(config *Raw_BacklightConfig, deviceAlias string, key int, color string) {
 	deviceBacklightConfig := GetDeviceBacklightConfig(config, deviceAlias)
 
 	if deviceBacklightConfig == nil {
