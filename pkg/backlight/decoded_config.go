@@ -16,9 +16,9 @@ type Decoded_Mapping struct {
 }
 
 type Decoded_DeviceBacklightConfig struct {
-	colorSetToValues   map[Decoded_ColorSetIdentifiers]Decoded_Values
-	keyStatusToMapping map[Decoded_KeyStatusIdentifiers]Decoded_Mapping
-	keyBacklightMap    map[Decoded_KeyBacklightIdentifiers]Raw_KeyBacklight
+	ColorSetToValues   map[Decoded_ColorSetIdentifiers]Decoded_Values
+	KeyStatusToMapping map[Decoded_KeyStatusIdentifiers]Decoded_Mapping
+	KeyBacklightMap    map[Decoded_KeyBacklightIdentifiers]Raw_KeyBacklight
 }
 
 type Decoded_ColorSetIdentifiers struct {

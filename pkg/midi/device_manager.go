@@ -78,7 +78,7 @@ func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
 	}
 
 	dm.addDevice(device)
-	err := device.RunDevice(dm.signals)
+	err := device.RunDevice(dm.signals, &dm.backlightConfig)
 
 	if err != nil {
 		return err

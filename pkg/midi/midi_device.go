@@ -6,6 +6,7 @@ import (
 	"gitlab.com/gomidi/midi/v2"
 	"gitlab.com/gomidi/midi/v2/drivers"
 	"log"
+	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	"midi_manipulator/pkg/model"
 	"sync"
@@ -49,9 +50,9 @@ func (md *MidiDevice) StopDevice() error {
 	return nil
 }
 
-func (md *MidiDevice) RunDevice(signals chan<- core.Signal) error {
+func (md *MidiDevice) RunDevice(signals chan<- core.Signal, backlightConfig *backlight.Decoded_DeviceBacklightConfig) error {
 	log.Printf("MIDI DEVICE {%s} CONNECTING ...\n", md.name)
-	go md.startupIllumination()
+	go md.startupIllumination(backlightConfig)
 	go md.listen(signals)
 	return nil
 }

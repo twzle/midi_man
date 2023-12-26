@@ -21,7 +21,7 @@
       ],
       "keyboard_backlight": [
         {
-          "key_range": [1, 4],
+          "key_range": [0, 3],
           "color_space": 1,
           "statuses": {
             "on": {
@@ -33,6 +33,22 @@
               "type": "ControlChange",
               "fallback_color": "black",
               "bytes": "B1 %key %payload"
+            }
+          }
+        },
+        {
+          "key_range": [60, 88],
+          "color_space": 1,
+          "statuses": {
+            "on": {
+              "type": "NoteOn",
+              "fallback_color": "red",
+              "bytes": "91 %key %payload"
+            },
+            "off": {
+              "type": "NoteOn",
+              "fallback_color": "black",
+              "bytes": "81 %key %payload"
             }
           }
         }
@@ -78,7 +94,7 @@
       ],
       "keyboard_backlight": [
         {
-          "key_range": [35, 111],
+          "key_range": [35, 35],
           "color_space": 1,
           "statuses": {
             "on": {
