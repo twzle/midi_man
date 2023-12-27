@@ -20,7 +20,7 @@ func main() {
 	systemConfig := &core.SystemConfig{}
 	userConfig := &config.UserConfig{}
 
-	_, decodedBacklightConfig, _ := backlight.InitConfig("configs/backlight.json")
+	_, decodedBacklightConfig, _ := backlight.InitConfig("configs/backlight_config.yaml")
 
 	err := core.ReadConfig(systemConfig, userConfig)
 	if err != nil {
