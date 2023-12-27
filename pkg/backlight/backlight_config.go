@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func InitConfig(confPath string) (*Raw_BacklightConfig, *Decoded_DeviceBacklightConfig, error) {
+func InitConfig(confPath string) (*RawBacklightConfig, *DecodedDeviceBacklightConfig, error) {
 	jsonFile, err := os.ReadFile(confPath)
 	if err != nil {
 		return nil, nil, err
@@ -14,14 +14,14 @@ func InitConfig(confPath string) (*Raw_BacklightConfig, *Decoded_DeviceBacklight
 	return cfg, decodedCfg, err
 }
 
-func ParseConfigFromBytes(data []byte) (*Raw_BacklightConfig, *Decoded_DeviceBacklightConfig, error) {
-	cfg := Raw_BacklightConfig{}
+func ParseConfigFromBytes(data []byte) (*RawBacklightConfig, *DecodedDeviceBacklightConfig, error) {
+	cfg := RawBacklightConfig{}
 
 	err := json.Unmarshal(data, &cfg)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	decodedCfg := DecodeConfig(&cfg)
+	decodedCfg := decodeConfig(&cfg)
 	return &cfg, &decodedCfg, nil
 }

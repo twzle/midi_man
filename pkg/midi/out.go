@@ -3,6 +3,7 @@ package midi
 import (
 	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/model"
+	"time"
 )
 
 func (md *MidiDevice) turnLightOn(cmd model.TurnLightOnCommand) {
@@ -19,41 +20,30 @@ func (md *MidiDevice) turnLightOff(cmd model.TurnLightOffCommand) {
 	}
 }
 
-func (md *MidiDevice) startupIllumination(config *backlight.Decoded_DeviceBacklightConfig) {
-	for i := 0; i < 4; i++ {
-		sequence := backlight.TurnLightOn(config, md.name, i, "red")
-		if len(sequence) == 0 {
-			continue
+func (md *MidiDevice) startupIllumination(config *backlight.DecodedDeviceBacklightConfig) {
+	backlightTimeOffset := time.Duration(config.DeviceBacklightTimeOffset[md.name])
+	for _, keyRange := range config.DeviceKeyRangeMap[md.name] {
+		for i := keyRange[0]; i <= keyRange[1]; i++ {
+			sequence, _ := backlight.TurnLight(config, md.name, i, "red", "on")
+			if len(sequence) == 0 {
+				continue
+			}
+
+			time.Sleep(time.Millisecond * backlightTimeOffset)
+
+			(*md.ports.out).Send(sequence)
+
 		}
 
-		(*md.ports.out).Send(sequence)
-	}
+		for i := keyRange[0]; i <= keyRange[1]; i++ {
+			sequence, _ := backlight.TurnLight(config, md.name, i, "red", "off")
+			if len(sequence) == 0 {
+				continue
+			}
 
-	for i := 0; i < 4; i++ {
-		sequence := backlight.TurnLightOff(config, md.name, i, "red")
-		if len(sequence) == 0 {
-			continue
+			time.Sleep(time.Millisecond * backlightTimeOffset)
+
+			(*md.ports.out).Send(sequence)
 		}
-
-		(*md.ports.out).Send(sequence)
-	}
-
-	// AKAI MPD226 PADS
-	for i := 60; i < 88; i++ {
-		sequence := backlight.TurnLightOn(config, md.name, i, "red")
-		if len(sequence) == 0 {
-			continue
-		}
-
-		(*md.ports.out).Send(sequence)
-	}
-
-	for i := 60; i < 88; i++ {
-		sequence := backlight.TurnLightOff(config, md.name, i, "red")
-		if len(sequence) == 0 {
-			continue
-		}
-
-		(*md.ports.out).Send(sequence)
 	}
 }

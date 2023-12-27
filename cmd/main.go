@@ -30,7 +30,7 @@ func main() {
 	setupApp(systemConfig, userConfig, decodedBacklightConfig)
 }
 
-func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig, backlightConfig *backlight.Decoded_DeviceBacklightConfig) {
+func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig, backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	deviceManager := midiHermophrodite.NewDeviceManager()
 	defer deviceManager.Close()
 

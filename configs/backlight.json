@@ -2,6 +2,7 @@
   "device_light_configuration": [
     {
       "device_name": "MPD226",
+      "backlight_time_offset": 50,
       "color_spaces": [
         {
           "color_space_id": 1,
@@ -56,6 +57,7 @@
     },
     {
       "device_name": "AKAI FIRE",
+      "backlight_time_offset": 50,
       "color_spaces": [
         {
           "color_space_id": 1,
@@ -94,7 +96,7 @@
       ],
       "keyboard_backlight": [
         {
-          "key_range": [35, 35],
+          "key_range": [35, 110],
           "color_space": 1,
           "statuses": {
             "on": {

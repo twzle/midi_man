@@ -1,39 +1,40 @@
 package backlight
 
-type Raw_Color struct {
+type RawColor struct {
 	ColorName string `json:"color_name" yaml:"color_name"`
 	Payload   string `json:"payload" yaml:"payload"`
 }
 
-type Raw_ColorSpace struct {
-	Id  int         `json:"color_space_id" yaml:"color_space_id"`
-	On  []Raw_Color `json:"on" yaml:"on"`
-	Off []Raw_Color `json:"off" yaml:"off"`
+type RawColorSpace struct {
+	Id  int        `json:"color_space_id" yaml:"color_space_id"`
+	On  []RawColor `json:"on" yaml:"on"`
+	Off []RawColor `json:"off" yaml:"off"`
 }
 
-type Raw_Status struct {
+type RawStatus struct {
 	Type          string `json:"type" yaml:"type"`
 	FallbackColor string `json:"fallback_color" yaml:"fallback_color"`
 	Bytes         string `json:"bytes" yaml:"bytes"`
 }
 
-type Raw_KeyBacklightStatuses struct {
-	On  Raw_Status `json:"on" yaml:"on"`
-	Off Raw_Status `json:"off" yaml:"off"`
+type RawKeyBacklightStatuses struct {
+	On  RawStatus `json:"on" yaml:"on"`
+	Off RawStatus `json:"off" yaml:"off"`
 }
 
-type Raw_KeyBacklight struct {
-	KeyRange          []byte                   `json:"key_range" yaml:"key_range"`
-	ColorSpace        int                      `json:"color_space" yaml:"color_space"`
-	BacklightStatuses Raw_KeyBacklightStatuses `json:"statuses" yaml:"statuses"`
+type RawKeyBacklight struct {
+	KeyRange          [2]byte                 `json:"key_range" yaml:"key_range"`
+	ColorSpace        int                     `json:"color_space" yaml:"color_space"`
+	BacklightStatuses RawKeyBacklightStatuses `json:"statuses" yaml:"statuses"`
 }
 
-type Raw_DeviceBacklightConfig struct {
-	DeviceName        string             `json:"device_name" yaml:"device_name"`
-	ColorSpaces       []Raw_ColorSpace   `json:"color_spaces" yaml:"color_spaces"`
-	KeyboardBacklight []Raw_KeyBacklight `json:"keyboard_backlight" yaml:"keyboard_backlight"`
+type RawDeviceBacklightConfig struct {
+	DeviceName          string            `json:"device_name" yaml:"device_name"`
+	BacklightTimeOffset int               `json:"backlight_time_offset" yaml:"backlight_time_offset"`
+	ColorSpaces         []RawColorSpace   `json:"color_spaces" yaml:"color_spaces"`
+	KeyboardBacklight   []RawKeyBacklight `json:"keyboard_backlight" yaml:"keyboard_backlight"`
 }
 
-type Raw_BacklightConfig struct {
-	DeviceBacklightConfigurations []Raw_DeviceBacklightConfig `json:"device_light_configuration" yaml:"device_light_configuration"`
+type RawBacklightConfig struct {
+	DeviceBacklightConfigurations []RawDeviceBacklightConfig `json:"device_light_configuration" yaml:"device_light_configuration"`
 }

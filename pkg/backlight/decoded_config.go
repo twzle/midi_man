@@ -5,48 +5,50 @@ import (
 	"strings"
 )
 
-type Decoded_Values struct {
+type DecodedValues struct {
 	payload []byte
 }
 
-type Decoded_Mapping struct {
+type DecodedMapping struct {
 	payloadIdx int
 	keyIdx     int
 	bytes      []byte
 }
 
-type Decoded_DeviceBacklightConfig struct {
-	ColorSetToValues   map[Decoded_ColorSetIdentifiers]Decoded_Values
-	KeyStatusToMapping map[Decoded_KeyStatusIdentifiers]Decoded_Mapping
-	KeyBacklightMap    map[Decoded_KeyBacklightIdentifiers]Raw_KeyBacklight
+type DecodedDeviceBacklightConfig struct {
+	ColorSetToValues          map[DecodedColorSetIdentifiers]DecodedValues
+	KeyStatusToMapping        map[DecodedKeyStatusIdentifiers]DecodedMapping
+	KeyBacklightMap           map[DecodedKeyBacklightIdentifiers]RawKeyBacklight
+	DeviceKeyRangeMap         map[string][][2]byte
+	DeviceBacklightTimeOffset map[string]int
 }
 
-type Decoded_ColorSetIdentifiers struct {
+type DecodedColorSetIdentifiers struct {
 	DeviceAlias string
 	Status      string
 	ColorSpace  int
 	ColorName   string
 }
 
-type Decoded_KeyStatusIdentifiers struct {
+type DecodedKeyStatusIdentifiers struct {
 	DeviceAlias string
 	Key         byte
 	Status      string
 }
 
-type Decoded_KeyBacklightIdentifiers struct {
+type DecodedKeyBacklightIdentifiers struct {
 	deviceAlias string
 	key         byte
 }
 
-func DecodePayload(payload string) []byte {
+func decodePayload(payload string) []byte {
 	byteString := strings.ReplaceAll(payload, " ", "")
 	bytes, _ := hex.DecodeString(byteString)
 
 	return bytes
 }
 
-func FindEntryIndex(payload string, token string) int {
+func findEntryIndex(payload string, token string) int {
 	idx := 0
 
 	end := strings.Index(payload, token)
@@ -62,44 +64,48 @@ func FindEntryIndex(payload string, token string) int {
 	return idx
 }
 
-func RemoveFormatKeysFromString(payload string) string {
+func removeFormatKeysFromString(payload string) string {
 	payload = strings.Replace(payload, "%payload", "00", 1)
 	payload = strings.Replace(payload, "%key", "00", 1)
 	return payload
 }
 
-func DecodeMapping(byteString string) Decoded_Mapping {
-	payloadIdx := FindEntryIndex(byteString, "%payload")
-	keyIdx := FindEntryIndex(byteString, "%key")
-	payload := RemoveFormatKeysFromString(byteString)
-	bytes := DecodePayload(payload)
-	return Decoded_Mapping{payloadIdx, keyIdx, bytes}
+func decodeMapping(byteString string) DecodedMapping {
+	payloadIdx := findEntryIndex(byteString, "%payload")
+	keyIdx := findEntryIndex(byteString, "%key")
+	payload := removeFormatKeysFromString(byteString)
+	bytes := decodePayload(payload)
+	return DecodedMapping{payloadIdx, keyIdx, bytes}
 
 }
 
-func DecodeConfig(cfg *Raw_BacklightConfig) Decoded_DeviceBacklightConfig {
-	kbm := make(map[Decoded_KeyBacklightIdentifiers]Raw_KeyBacklight)
-	cstv := make(map[Decoded_ColorSetIdentifiers]Decoded_Values)
-	kstm := make(map[Decoded_KeyStatusIdentifiers]Decoded_Mapping)
+func decodeConfig(cfg *RawBacklightConfig) DecodedDeviceBacklightConfig {
+	kbm := make(map[DecodedKeyBacklightIdentifiers]RawKeyBacklight)
+	cstv := make(map[DecodedColorSetIdentifiers]DecodedValues)
+	kstm := make(map[DecodedKeyStatusIdentifiers]DecodedMapping)
+	dkrm := make(map[string][][2]byte)
+	dbto := make(map[string]int)
 
 	for _, deviceBacklightConfig := range cfg.DeviceBacklightConfigurations {
+		dbto[deviceBacklightConfig.DeviceName] = deviceBacklightConfig.BacklightTimeOffset
+
 		for _, deviceColorSpace := range deviceBacklightConfig.ColorSpaces {
 			for _, onStatusColors := range deviceColorSpace.On {
 
-				csi := Decoded_ColorSetIdentifiers{deviceBacklightConfig.DeviceName,
+				csi := DecodedColorSetIdentifiers{deviceBacklightConfig.DeviceName,
 					"on", deviceColorSpace.Id, onStatusColors.ColorName}
 
-				values := Decoded_Values{DecodePayload(onStatusColors.Payload)}
+				values := DecodedValues{decodePayload(onStatusColors.Payload)}
 
 				cstv[csi] = values
 			}
 
 			for _, offStatusColors := range deviceColorSpace.Off {
 
-				csi := Decoded_ColorSetIdentifiers{deviceBacklightConfig.DeviceName,
+				csi := DecodedColorSetIdentifiers{deviceBacklightConfig.DeviceName,
 					"off", deviceColorSpace.Id, offStatusColors.ColorName}
 
-				values := Decoded_Values{DecodePayload(offStatusColors.Payload)}
+				values := DecodedValues{decodePayload(offStatusColors.Payload)}
 
 				cstv[csi] = values
 			}
@@ -108,23 +114,62 @@ func DecodeConfig(cfg *Raw_BacklightConfig) Decoded_DeviceBacklightConfig {
 		for _, backlightRange := range deviceBacklightConfig.KeyboardBacklight {
 			keyRange := backlightRange.KeyRange
 
+			dkrm[deviceBacklightConfig.DeviceName] = append(dkrm[deviceBacklightConfig.DeviceName], backlightRange.KeyRange)
+
 			for key := keyRange[0]; key <= keyRange[len(keyRange)-1]; key++ {
-				kbl := Decoded_KeyBacklightIdentifiers{deviceBacklightConfig.DeviceName, key}
+				kbl := DecodedKeyBacklightIdentifiers{deviceBacklightConfig.DeviceName, key}
 				kbm[kbl] = backlightRange
 
-				ksi := Decoded_KeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
+				ksi := DecodedKeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
 					key, "on"}
 
-				kstm[ksi] = DecodeMapping(backlightRange.BacklightStatuses.On.Bytes)
+				kstm[ksi] = decodeMapping(backlightRange.BacklightStatuses.On.Bytes)
 
-				ksi = Decoded_KeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
+				ksi = DecodedKeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
 					key, "off"}
 
-				kstm[ksi] = DecodeMapping(backlightRange.BacklightStatuses.Off.Bytes)
+				kstm[ksi] = decodeMapping(backlightRange.BacklightStatuses.Off.Bytes)
 
 			}
 		}
 	}
-	dbct := Decoded_DeviceBacklightConfig{cstv, kstm, kbm}
+	dbct := DecodedDeviceBacklightConfig{
+		cstv, kstm, kbm,
+		dkrm, dbto}
 	return dbct
+}
+
+func (db *DecodedDeviceBacklightConfig) FindArguments(deviceAlias string, key byte, color string, status string) (*DecodedMapping, *DecodedValues) {
+	kbl := DecodedKeyBacklightIdentifiers{deviceAlias, key}
+	kb, _ := db.KeyBacklightMap[kbl]
+
+	csi := DecodedColorSetIdentifiers{
+		deviceAlias, status, kb.ColorSpace, color}
+
+	values, ok := db.ColorSetToValues[csi]
+
+	if !ok {
+		var fallbackColorName string
+
+		switch status {
+		case "on":
+			fallbackColorName = kb.BacklightStatuses.On.FallbackColor
+		case "off":
+			fallbackColorName = kb.BacklightStatuses.Off.FallbackColor
+		}
+
+		csi = DecodedColorSetIdentifiers{
+			deviceAlias, status, kb.ColorSpace, fallbackColorName}
+		values, ok = db.ColorSetToValues[csi]
+
+		if !ok {
+			return nil, nil
+		}
+	}
+
+	ksi := DecodedKeyStatusIdentifiers{deviceAlias, key, status}
+
+	mapping := db.KeyStatusToMapping[ksi]
+
+	return &mapping, &values
 }

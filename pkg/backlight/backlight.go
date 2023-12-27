@@ -1,69 +1,31 @@
 package backlight
 
-func TurnLightOn(config *Decoded_DeviceBacklightConfig, deviceAlias string, key int, color string) []byte {
-	kbl := Decoded_KeyBacklightIdentifiers{deviceAlias, byte(key)}
-	kb, _ := config.KeyBacklightMap[kbl]
+import "fmt"
 
-	csi := Decoded_ColorSetIdentifiers{deviceAlias, "on", kb.ColorSpace, color}
+func TurnLight(config *DecodedDeviceBacklightConfig, deviceAlias string, key byte, color string, status string) ([]byte, error) {
+	mapping, values := config.FindArguments(deviceAlias, key, color, status)
 
-	values, ok := config.ColorSetToValues[csi]
-
-	if !ok {
-		csi = Decoded_ColorSetIdentifiers{deviceAlias, "on", kb.ColorSpace,
-			kb.BacklightStatuses.On.FallbackColor}
-		values, ok = config.ColorSetToValues[csi]
-
-		if !ok {
-			return nil
-		}
+	if mapping == nil || values == nil {
+		return nil, fmt.Errorf("parameters for TurnLight command were not found")
 	}
-
-	ksi := Decoded_KeyStatusIdentifiers{deviceAlias, byte(key), "on"}
-
-	mapping := config.KeyStatusToMapping[ksi]
 
 	bytes := mapping.bytes
 
-	bytes[mapping.keyIdx] = byte(key)
+	/* Key takes single byte to be inserted into template byte sequence
+	parsed from format string containing with key %key
+	*/
+	bytes[mapping.keyIdx] = key
 
+	/* Payload takes multiple bytes to be inserted into template byte sequence
+	parsed from format string containing with key %payload
+	*/
 	bytes = append(bytes[:mapping.payloadIdx+len(values.payload)-1], bytes[mapping.payloadIdx:]...)
 
+	/* Insertion of payload byte sequence into template byte sequence starting from precalculated index
+	 */
 	for idx, b := range values.payload {
 		bytes[mapping.payloadIdx+idx] = b
 	}
 
-	return bytes
-}
-
-func TurnLightOff(config *Decoded_DeviceBacklightConfig, deviceAlias string, key int, color string) []byte {
-	kbl := Decoded_KeyBacklightIdentifiers{deviceAlias, byte(key)}
-	kb, _ := config.KeyBacklightMap[kbl]
-
-	csi := Decoded_ColorSetIdentifiers{deviceAlias, "off", kb.ColorSpace, color}
-
-	values, ok := config.ColorSetToValues[csi]
-
-	if !ok {
-		csi = Decoded_ColorSetIdentifiers{deviceAlias, "off", kb.ColorSpace,
-			kb.BacklightStatuses.Off.FallbackColor}
-		values, ok = config.ColorSetToValues[csi]
-
-		if !ok {
-			return nil
-		}
-	}
-
-	ksi := Decoded_KeyStatusIdentifiers{deviceAlias, byte(key), "off"}
-
-	mapping := config.KeyStatusToMapping[ksi]
-	bytes := mapping.bytes
-
-	bytes[mapping.keyIdx] = byte(key)
-
-	bytes = append(bytes[:mapping.payloadIdx+len(values.payload)-1], bytes[mapping.payloadIdx:]...)
-	for idx, b := range values.payload {
-		bytes[mapping.payloadIdx+idx] = b
-	}
-
-	return bytes
+	return bytes, nil
 }
