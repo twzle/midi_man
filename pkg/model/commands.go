@@ -8,6 +8,7 @@ type MidiCommand interface {
 type TurnLightOnCommand struct {
 	KeyCode     int    `hubman:"key_code"`
 	DeviceAlias string `hubman:"device_alias"`
+	ColorName   string `hubman:"color_name"`
 }
 
 func (c TurnLightOnCommand) Code() string {
@@ -21,6 +22,7 @@ func (c TurnLightOnCommand) Description() string {
 type TurnLightOffCommand struct {
 	KeyCode     int    `hubman:"key_code"`
 	DeviceAlias string `hubman:"device_alias"`
+	ColorName   string `hubman:"color_name"`
 }
 
 func (c TurnLightOffCommand) Code() string {
@@ -34,6 +36,7 @@ func (c TurnLightOffCommand) Description() string {
 type SingleBlinkCommand struct {
 	KeyCode     int    `hubman:"key_code"`
 	DeviceAlias string `hubman:"device_alias"`
+	ColorName   string `hubman:"color_name"`
 }
 
 func (c SingleBlinkCommand) Code() string {
@@ -47,6 +50,7 @@ func (c SingleBlinkCommand) Description() string {
 type SingleReversedBlinkCommand struct {
 	KeyCode     int    `hubman:"key_code"`
 	DeviceAlias string `hubman:"device_alias"`
+	ColorName   string `hubman:"color_name"`
 }
 
 func (c SingleReversedBlinkCommand) Code() string {
@@ -60,6 +64,7 @@ func (c SingleReversedBlinkCommand) Description() string {
 type ContinuousBlinkCommand struct {
 	KeyCode     int    `hubman:"key_code"`
 	DeviceAlias string `hubman:"device_alias"`
+	ColorName   string `hubman:"color_name"`
 }
 
 func (c ContinuousBlinkCommand) Code() string {

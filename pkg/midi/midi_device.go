@@ -32,12 +32,12 @@ func (md *MidiDevice) GetAlias() string {
 	return md.name
 }
 
-func (md *MidiDevice) ExecuteCommand(command model.MidiCommand) error {
+func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
 	switch v := command.(type) {
 	case model.TurnLightOnCommand:
-		md.turnLightOn(command.(model.TurnLightOnCommand))
+		md.turnLightOn(command.(model.TurnLightOnCommand), backlightConfig)
 	case model.TurnLightOffCommand:
-		md.turnLightOff(command.(model.TurnLightOffCommand))
+		md.turnLightOff(command.(model.TurnLightOffCommand), backlightConfig)
 	default:
 		fmt.Printf("Unknown command with type: \"%T\"\n", v)
 	}

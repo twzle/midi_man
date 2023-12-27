@@ -15,11 +15,11 @@ type DeviceManager struct {
 	devices         map[string]*MidiDevice
 	mutex           sync.Mutex
 	signals         chan core.Signal
-	backlightConfig backlight.DecodedDeviceBacklightConfig
+	backlightConfig *backlight.DecodedDeviceBacklightConfig
 }
 
 func (dm *DeviceManager) SetBacklightConfig(cfg *backlight.DecodedDeviceBacklightConfig) {
-	dm.backlightConfig = *cfg
+	dm.backlightConfig = cfg
 }
 
 func (dm *DeviceManager) getDevice(alias string) (*MidiDevice, bool) {
@@ -61,7 +61,7 @@ func (dm *DeviceManager) ExecuteOnDevice(alias string, cmd model.MidiCommand) er
 		return fmt.Errorf("device with alias {%s} is not active", alias)
 	}
 
-	err := device.ExecuteCommand(cmd)
+	err := device.ExecuteCommand(cmd, dm.backlightConfig)
 
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
 	}
 
 	dm.addDevice(device)
-	err := device.RunDevice(dm.signals, &dm.backlightConfig)
+	err := device.RunDevice(dm.signals, dm.backlightConfig)
 
 	if err != nil {
 		return err

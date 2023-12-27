@@ -2,8 +2,8 @@ package backlight
 
 import "fmt"
 
-func TurnLight(config *DecodedDeviceBacklightConfig, deviceAlias string, key byte, color string, status string) ([]byte, error) {
-	mapping, values := config.FindArguments(deviceAlias, key, color, status)
+func (db *DecodedDeviceBacklightConfig) TurnLight(deviceAlias string, key byte, color string, status string) ([]byte, error) {
+	mapping, values := db.FindArguments(deviceAlias, key, color, status)
 
 	if mapping == nil || values == nil {
 		return nil, fmt.Errorf("parameters for TurnLight command were not found")
