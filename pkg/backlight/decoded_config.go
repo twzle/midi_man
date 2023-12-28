@@ -10,9 +10,10 @@ type DecodedValues struct {
 }
 
 type DecodedMapping struct {
-	payloadIdx int
-	keyIdx     int
-	bytes      []byte
+	payloadIdx     int
+	keyIdx         int
+	keyNumberShift int
+	bytes          []byte
 }
 
 type DecodedDeviceBacklightConfig struct {
@@ -70,12 +71,12 @@ func removeFormatKeysFromString(payload string) string {
 	return payload
 }
 
-func decodeMapping(byteString string) DecodedMapping {
+func decodeMapping(byteString string, keyNumberShift int) DecodedMapping {
 	payloadIdx := findEntryIndex(byteString, "%payload")
 	keyIdx := findEntryIndex(byteString, "%key")
 	payload := removeFormatKeysFromString(byteString)
 	bytes := decodePayload(payload)
-	return DecodedMapping{payloadIdx, keyIdx, bytes}
+	return DecodedMapping{payloadIdx, keyIdx, keyNumberShift, bytes}
 
 }
 
@@ -123,12 +124,12 @@ func decodeConfig(cfg *RawBacklightConfig) DecodedDeviceBacklightConfig {
 				ksi := DecodedKeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
 					key, "on"}
 
-				kstm[ksi] = decodeMapping(backlightRange.BacklightStatuses.On.Bytes)
+				kstm[ksi] = decodeMapping(backlightRange.BacklightStatuses.On.Bytes, backlightRange.KeyNumberShift)
 
 				ksi = DecodedKeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
 					key, "off"}
 
-				kstm[ksi] = decodeMapping(backlightRange.BacklightStatuses.Off.Bytes)
+				kstm[ksi] = decodeMapping(backlightRange.BacklightStatuses.Off.Bytes, backlightRange.KeyNumberShift)
 
 			}
 		}

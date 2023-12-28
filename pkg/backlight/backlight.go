@@ -14,7 +14,7 @@ func (db *DecodedDeviceBacklightConfig) TurnLight(deviceAlias string, key byte, 
 	/* Key takes single byte to be inserted into template byte sequence
 	parsed from format string containing with key %key
 	*/
-	bytes[mapping.keyIdx] = key
+	bytes[mapping.keyIdx] = byte(int(key) - mapping.keyNumberShift)
 
 	/* Payload takes multiple bytes to be inserted into template byte sequence
 	parsed from format string containing with key %payload

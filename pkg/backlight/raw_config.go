@@ -26,6 +26,7 @@ type RawKeyBacklight struct {
 	KeyRange          [2]byte                 `json:"key_range" yaml:"key_range"`
 	ColorSpace        int                     `json:"color_space" yaml:"color_space"`
 	BacklightStatuses RawKeyBacklightStatuses `json:"statuses" yaml:"statuses"`
+	KeyNumberShift    int                     `json:"key_number_shift" yaml:"key_number_shift"`
 }
 
 type RawDeviceBacklightConfig struct {
