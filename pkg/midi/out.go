@@ -24,7 +24,7 @@ func (md *MidiDevice) startupIllumination(config *backlight.DecodedDeviceBacklig
 	backlightTimeOffset := time.Duration(config.DeviceBacklightTimeOffset[md.name])
 	for _, keyRange := range config.DeviceKeyRangeMap[md.name] {
 		for i := keyRange[0]; i <= keyRange[1]; i++ {
-			sequence, _ := config.TurnLight(md.name, i, "red", "on")
+			sequence, _ := config.TurnLight(md.name, i, "none", "on")
 			if len(sequence) == 0 {
 				continue
 			}
@@ -36,7 +36,7 @@ func (md *MidiDevice) startupIllumination(config *backlight.DecodedDeviceBacklig
 		}
 
 		for i := keyRange[0]; i <= keyRange[1]; i++ {
-			sequence, _ := config.TurnLight(md.name, i, "red", "off")
+			sequence, _ := config.TurnLight(md.name, i, "none", "off")
 			if len(sequence) == 0 {
 				continue
 			}

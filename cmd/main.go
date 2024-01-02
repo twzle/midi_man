@@ -51,6 +51,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig, ba
 			hubman.WithSignal[model.NotePushed](),
 			hubman.WithSignal[model.NoteHold](),
 			hubman.WithSignal[model.NoteReleased](),
+			hubman.WithSignal[model.NoteReleasedAfterHold](),
 			hubman.WithSignal[model.ControlPushed](),
 			hubman.WithChannel(signals),
 		),

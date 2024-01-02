@@ -42,6 +42,20 @@ func (s NoteReleased) Description() string {
 	return "NoteReleased - signal represents state of key with 'Note' type right off it was released on a device"
 }
 
+type NoteReleasedAfterHold struct {
+	Device   string `hubman:"device"`
+	KeyCode  int    `hubman:"key_code"`
+	Velocity int    `hubman:"velocity"`
+}
+
+func (s NoteReleasedAfterHold) Code() string {
+	return "NoteReleasedAfterHold"
+}
+
+func (s NoteReleasedAfterHold) Description() string {
+	return "NoteReleasedAfterHold - signal represents state of key with 'Note' type right off it was released on a device after hold"
+}
+
 // ControlPushed В MIDI Control имеет только один тип событий "ControlChange",
 // поэтому длительность и конец нажатия здесь не отслеживаются
 type ControlPushed struct {
