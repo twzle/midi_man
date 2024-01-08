@@ -5,6 +5,11 @@ import (
 	"strings"
 )
 
+const (
+	On  string = "on"
+	Off        = "off"
+)
+
 type DecodedValues struct {
 	payload []byte
 }
@@ -94,7 +99,7 @@ func decodeConfig(cfg *RawBacklightConfig) DecodedDeviceBacklightConfig {
 			for _, onStatusColors := range deviceColorSpace.On {
 
 				csi := DecodedColorSetIdentifiers{deviceBacklightConfig.DeviceName,
-					"on", deviceColorSpace.Id, onStatusColors.ColorName}
+					On, deviceColorSpace.Id, onStatusColors.ColorName}
 
 				values := DecodedValues{decodePayload(onStatusColors.Payload)}
 
@@ -104,7 +109,7 @@ func decodeConfig(cfg *RawBacklightConfig) DecodedDeviceBacklightConfig {
 			for _, offStatusColors := range deviceColorSpace.Off {
 
 				csi := DecodedColorSetIdentifiers{deviceBacklightConfig.DeviceName,
-					"off", deviceColorSpace.Id, offStatusColors.ColorName}
+					Off, deviceColorSpace.Id, offStatusColors.ColorName}
 
 				values := DecodedValues{decodePayload(offStatusColors.Payload)}
 
@@ -122,12 +127,12 @@ func decodeConfig(cfg *RawBacklightConfig) DecodedDeviceBacklightConfig {
 				kbm[kbl] = backlightRange
 
 				ksi := DecodedKeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
-					key, "on"}
+					key, On}
 
 				kstm[ksi] = decodeMapping(backlightRange.BacklightStatuses.On.Bytes, backlightRange.KeyNumberShift)
 
 				ksi = DecodedKeyStatusIdentifiers{deviceBacklightConfig.DeviceName,
-					key, "off"}
+					key, Off}
 
 				kstm[ksi] = decodeMapping(backlightRange.BacklightStatuses.Off.Bytes, backlightRange.KeyNumberShift)
 
@@ -153,9 +158,9 @@ func (db *DecodedDeviceBacklightConfig) FindArguments(deviceAlias string, key by
 		var fallbackColorName string
 
 		switch status {
-		case "on":
+		case On:
 			fallbackColorName = kb.BacklightStatuses.On.FallbackColor
-		case "off":
+		case Off:
 			fallbackColorName = kb.BacklightStatuses.Off.FallbackColor
 		}
 

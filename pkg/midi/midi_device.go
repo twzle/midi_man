@@ -38,6 +38,10 @@ func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig 
 		md.turnLightOn(command.(model.TurnLightOnCommand), backlightConfig)
 	case model.TurnLightOffCommand:
 		md.turnLightOff(command.(model.TurnLightOffCommand), backlightConfig)
+	case model.SingleBlinkCommand:
+		md.singleBlink(command.(model.SingleBlinkCommand), backlightConfig)
+	case model.SingleReversedBlinkCommand:
+		md.singleReversedBlink(command.(model.SingleReversedBlinkCommand), backlightConfig)
 	default:
 		fmt.Printf("Unknown command with type: \"%T\"\n", v)
 	}
