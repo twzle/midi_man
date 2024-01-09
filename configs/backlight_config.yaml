@@ -148,6 +148,19 @@ device_light_configuration:
             payload: '01'
           - color_name: light_green
             payload: '02'
+      - color_space_id: 8
+        'on':
+          - color_name: channel
+            payload: '00'
+          - color_name: mixer
+            payload: '01'
+          - color_name: user1
+            payload: '02'
+          - color_name: user2
+            payload: '03'
+        'off':
+          - color_name: channel
+            payload: '00'
     keyboard_backlight:
       - key_range:
           - 54
@@ -303,6 +316,20 @@ device_light_configuration:
             type: ControlChange
             fallback_color: black
             bytes: B0 %key %payload
+      - key_range:
+          - 27
+          - 27
+        key_number_shift: 0
+        color_space: 8
+        statuses:
+          'on':
+            type: ControlChange
+            fallback_color: channel
+            bytes: B0 %key %payload
+          'off':
+            type: ControlChange
+            fallback_color: channel
+            bytes: B0 %key %payload
   - device_name: WORLDE easy control
     backlight_time_offset: 50
     color_spaces:
@@ -317,7 +344,7 @@ device_light_configuration:
       - key_range:
           - 23
           - 31
-        key_number_shift: -23
+        key_number_shift: 0
         color_space: 1
         statuses:
           'on':
