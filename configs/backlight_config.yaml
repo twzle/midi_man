@@ -39,7 +39,7 @@ device_light_configuration:
             fallback_color: black
             bytes: 81 %key %payload
   - device_name: FL STUDIO FIRE
-    backlight_time_offset: 5
+    backlight_time_offset: 15
     color_spaces:
       - color_space_id: 1
         'on':
@@ -329,29 +329,4 @@ device_light_configuration:
           'off':
             type: ControlChange
             fallback_color: channel
-            bytes: B0 %key %payload
-  - device_name: WORLDE easy control
-    backlight_time_offset: 50
-    color_spaces:
-      - color_space_id: 1
-        'on':
-          - color_name: red
-            payload: 7F
-        'off':
-          - color_name: black
-            payload: '00'
-    keyboard_backlight:
-      - key_range:
-          - 23
-          - 31
-        key_number_shift: 0
-        color_space: 1
-        statuses:
-          'on':
-            type: ControlChange
-            fallback_color: red
-            bytes: B0 %key %payload
-          'off':
-            type: ControlChange
-            fallback_color: black
             bytes: B0 %key %payload
