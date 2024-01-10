@@ -32,9 +32,9 @@ func (s NoteHold) Description() string {
 
 type NoteReleased struct {
 	Device    string `hubman:"device"`
+	Namespace string `hubman:"namespace"`
 	KeyCode   int    `hubman:"key_code"`
 	Velocity  int    `hubman:"velocity"`
-	Namespace string `hubman:"namespace"`
 }
 
 func (s NoteReleased) Code() string {
@@ -46,9 +46,10 @@ func (s NoteReleased) Description() string {
 }
 
 type NoteReleasedAfterHold struct {
-	Device   string `hubman:"device"`
-	KeyCode  int    `hubman:"key_code"`
-	Velocity int    `hubman:"velocity"`
+	Device    string `hubman:"device"`
+	Namespace string `hubman:"namespace"`
+	KeyCode   int    `hubman:"key_code"`
+	Velocity  int    `hubman:"velocity"`
 }
 
 func (s NoteReleasedAfterHold) Code() string {

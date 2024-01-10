@@ -50,13 +50,11 @@ func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig 
 }
 
 func (md *MidiDevice) StopDevice() error {
-	log.Printf("MIDI DEVICE {%s} STOPPING ...\n", md.name)
 	md.stop <- true
 	return nil
 }
 
 func (md *MidiDevice) RunDevice(signals chan<- core.Signal, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
-	log.Printf("MIDI DEVICE {%s} CONNECTING ...\n", md.name)
 	go md.startupIllumination(backlightConfig)
 	go md.listen(signals)
 	return nil

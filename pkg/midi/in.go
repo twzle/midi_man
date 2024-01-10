@@ -83,8 +83,12 @@ func (md *MidiDevice) messageToSignal() []core.Signal {
 			// DELETE KEY FROM BUFFER
 			delete(md.clickBuffer, kctx.key)
 		case model.NoteReleasedAfterHold:
-			signal := model.NoteReleasedAfterHold{Device: md.name, KeyCode: int(kctx.key),
-				Velocity: int(kctx.velocity)}
+			signal := model.NoteReleasedAfterHold{
+				Device:    md.name,
+				KeyCode:   int(kctx.key),
+				Velocity:  int(kctx.velocity),
+				Namespace: md.namespace,
+			}
 			signalSequence = append(signalSequence, signal)
 			// DELETE KEY FROM BUFFER
 			delete(md.clickBuffer, kctx.key)
