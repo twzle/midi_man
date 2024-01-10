@@ -74,3 +74,16 @@ func (c ContinuousBlinkCommand) Code() string {
 func (c ContinuousBlinkCommand) Description() string {
 	return "Continuous blink (until next discontinuous command) specified MIDI key"
 }
+
+type SetActiveNamespaceCommand struct {
+	Namespace string `hubman:"namespace"`
+	Device    string `hubman:"device"`
+}
+
+func (s SetActiveNamespaceCommand) Code() string {
+	return "SetActiveNamespaceCommand"
+}
+
+func (s SetActiveNamespaceCommand) Description() string {
+	return `Sets given namespace as active on given device, all signals will be received from will contain active namespace attribute`
+}

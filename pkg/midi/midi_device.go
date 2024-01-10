@@ -21,6 +21,7 @@ type MidiDevice struct {
 	holdDelta   time.Duration
 	mutex       sync.Mutex
 	stop        chan bool
+	namespace   string
 }
 
 type MidiPorts struct {
@@ -112,6 +113,7 @@ func (md *MidiDevice) applyConfiguration(config config.DeviceConfig) {
 	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
 	md.clickBuffer = make(map[uint8]*KeyContext)
 	md.stop = make(chan bool, 1)
+	md.namespace = config.Namespace
 }
 
 func (md *MidiDevice) updateConfiguration(config config.DeviceConfig) {
