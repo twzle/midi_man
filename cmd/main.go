@@ -21,23 +21,26 @@ func main() {
 	systemConfig := &core.SystemConfig{}
 	userConfig := &config.UserConfig{}
 
-	_, decodedBacklightConfig, _ := backlight.InitConfig("configs/backlight_config.yaml")
-
 	err := core.ReadConfig(systemConfig, userConfig)
 	if err != nil {
 		log.Fatal(fmt.Errorf("error while reading config: %w", err))
 	}
 
-	setupApp(systemConfig, userConfig, decodedBacklightConfig)
+	setupApp(systemConfig, userConfig)
 }
 
-func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig, backlightConfig *backlight.DecodedDeviceBacklightConfig) {
+func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	logger, err := zap.NewProduction()
 	if err != nil { // FIXME: use app container api after
 		log.Fatal(err)
 	}
 	deviceManager := midiHermophrodite.NewDeviceManager(logger)
 	defer deviceManager.Close()
+
+	backlightConfig, err := backlight.InitConfig("configs/backlight_config.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	deviceManager.SetBacklightConfig(backlightConfig)
 

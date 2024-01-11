@@ -1,15 +1,18 @@
 package backlight
 
-import "fmt"
+import (
+	"errors"
+)
 
-func (db *DecodedDeviceBacklightConfig) TurnLight(deviceAlias string, key byte, color string, status string) ([]byte, error) {
+func (db *DecodedDeviceBacklightConfig) TurnLight(deviceAlias string, key byte, color string, status StatusName) ([]byte, error) {
 	mapping, values := db.FindArguments(deviceAlias, key, color, status)
 
 	if mapping == nil || values == nil {
-		return nil, fmt.Errorf("parameters for TurnLight command were not found")
+		return nil, errors.New("parameters for TurnLight command were not found")
 	}
 
-	bytes := mapping.bytes
+	bytes := make([]byte, len(mapping.bytes), cap(mapping.bytes))
+	copy(bytes, mapping.bytes)
 
 	/* Key takes single byte to be inserted into template byte sequence
 	parsed from format string containing with key %key

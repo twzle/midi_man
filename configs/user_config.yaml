@@ -1,8 +1,4 @@
 midi_devices:
-  - device_name: MPD226
-    active: true
-    hold_delta: 1
-    namespace: default
   - device_name: FL STUDIO FIRE
     active: true
     hold_delta: 1

@@ -5,9 +5,11 @@ import (
 	"strings"
 )
 
+type StatusName string
+
 const (
-	On  string = "on"
-	Off        = "off"
+	On  StatusName = "on"
+	Off            = "off"
 )
 
 type DecodedValues struct {
@@ -31,7 +33,7 @@ type DecodedDeviceBacklightConfig struct {
 
 type DecodedColorSetIdentifiers struct {
 	DeviceAlias string
-	Status      string
+	Status      StatusName
 	ColorSpace  int
 	ColorName   string
 }
@@ -39,7 +41,7 @@ type DecodedColorSetIdentifiers struct {
 type DecodedKeyStatusIdentifiers struct {
 	DeviceAlias string
 	Key         byte
-	Status      string
+	Status      StatusName
 }
 
 type DecodedKeyBacklightIdentifiers struct {
@@ -145,7 +147,7 @@ func decodeConfig(cfg *RawBacklightConfig) DecodedDeviceBacklightConfig {
 	return dbct
 }
 
-func (db *DecodedDeviceBacklightConfig) FindArguments(deviceAlias string, key byte, color string, status string) (*DecodedMapping, *DecodedValues) {
+func (db *DecodedDeviceBacklightConfig) FindArguments(deviceAlias string, key byte, color string, status StatusName) (*DecodedMapping, *DecodedValues) {
 	kbl := DecodedKeyBacklightIdentifiers{deviceAlias, key}
 	kb, _ := db.KeyBacklightMap[kbl]
 

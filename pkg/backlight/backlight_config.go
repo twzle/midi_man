@@ -5,23 +5,23 @@ import (
 	"os"
 )
 
-func InitConfig(confPath string) (*RawBacklightConfig, *DecodedDeviceBacklightConfig, error) {
+func InitConfig(confPath string) (*DecodedDeviceBacklightConfig, error) {
 	file, err := os.ReadFile(confPath)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	cfg, decodedCfg, err := ParseConfigFromBytes(file)
-	return cfg, decodedCfg, err
+	cfg, err := ParseConfigFromBytes(file)
+	return cfg, err
 }
 
-func ParseConfigFromBytes(data []byte) (*RawBacklightConfig, *DecodedDeviceBacklightConfig, error) {
+func ParseConfigFromBytes(data []byte) (*DecodedDeviceBacklightConfig, error) {
 	cfg := RawBacklightConfig{}
 
 	err := yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	decodedCfg := decodeConfig(&cfg)
-	return &cfg, &decodedCfg, nil
+	return &decodedCfg, nil
 }
