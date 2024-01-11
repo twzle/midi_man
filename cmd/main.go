@@ -117,8 +117,8 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 				}),
 		),
 		hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
-			update, _ := configuration.User.([]config.DeviceConfig)
-			deviceManager.UpdateDevices(update)
+			update, _ := configuration.User.(*config.UserConfig)
+			deviceManager.UpdateDevices(update.MidiDevices)
 		}),
 	)
 	<-app.WaitShutdown()
