@@ -122,5 +122,4 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 		}),
 	)
 	<-app.WaitShutdown()
-
 }
