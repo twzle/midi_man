@@ -1,13 +1,20 @@
 package backlight
 
 import (
+	"log"
 	"testing"
 )
 
 func BenchmarkTurnLight(b *testing.B) {
-	_, decodedBacklightConfig, _ := InitConfig("../../configs/backlight_config.yaml")
+	decodedBacklightConfig, err := InitConfig("../../configs/backlight_config.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for i := 0; i < b.N; i++ {
-		_, _ = decodedBacklightConfig.TurnLight("MPD226", 2, "red", "on")
+		_, err = decodedBacklightConfig.TurnLight("MPD226", 2, "red", "on")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
