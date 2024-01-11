@@ -29,8 +29,12 @@ func (md *MidiDevice) getMidiMessage(msg midi.Message, _ int32) {
 		// NOTE RELEASED STATUS
 		val, ok := md.clickBuffer.GetKeyContext(key)
 		if ok {
-			val.status = model.NoteReleased{Device: md.name, KeyCode: int(key), Velocity: int(velocity)}
-			//mm.clickBuffer.SetKeyContext(key, val)
+			switch val.status.(type) {
+			case model.NotePushed:
+				val.status = model.NoteReleased{Device: md.name, KeyCode: int(key), Velocity: int(velocity)}
+			case model.NoteHold:
+				val.status = model.NoteReleasedAfterHold{Device: md.name, KeyCode: int(key), Velocity: int(velocity)}
+			}
 		}
 	case msg.GetControlChange(&channel, &key, &velocity):
 		// CONTROL PUSHED STATUS
@@ -70,6 +74,16 @@ func (md *MidiDevice) messageToSignal() []core.Signal {
 			}
 		case model.NoteReleased:
 			signal := model.NoteReleased{
+				Device:    md.name,
+				KeyCode:   int(kctx.key),
+				Velocity:  int(kctx.velocity),
+				Namespace: md.namespace,
+			}
+			signalSequence = append(signalSequence, signal)
+			// DELETE KEY FROM BUFFER
+			delete(md.clickBuffer, kctx.key)
+		case model.NoteReleasedAfterHold:
+			signal := model.NoteReleasedAfterHold{
 				Device:    md.name,
 				KeyCode:   int(kctx.key),
 				Velocity:  int(kctx.velocity),

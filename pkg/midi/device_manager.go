@@ -6,19 +6,25 @@ import (
 	_ "gitlab.com/gomidi/midi/v2"
 	"go.uber.org/zap"
 	"log"
+	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	"midi_manipulator/pkg/model"
 	"sync"
 )
 
 type DeviceManager struct {
-	devices map[string]*MidiDevice
-	mutex   sync.Mutex
-	signals chan core.Signal
+	devices         map[string]*MidiDevice
+	mutex           sync.Mutex
+	signals         chan core.Signal
+	backlightConfig *backlight.DecodedDeviceBacklightConfig
 	logger  *zap.Logger
 
 	activeNamespace string
 	nmMutex         sync.RWMutex
+}
+
+func (dm *DeviceManager) SetBacklightConfig(cfg *backlight.DecodedDeviceBacklightConfig) {
+	dm.backlightConfig = cfg
 }
 
 func (dm *DeviceManager) getDevice(alias string) (*MidiDevice, bool) {
@@ -62,7 +68,7 @@ func (dm *DeviceManager) ExecuteOnDevice(alias string, cmd model.MidiCommand) er
 		return fmt.Errorf("device with alias {%s} is not active", alias)
 	}
 
-	err := device.ExecuteCommand(cmd)
+	err := device.ExecuteCommand(cmd, dm.backlightConfig)
 
 	if err != nil {
 		return err
@@ -80,7 +86,7 @@ func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
 	}
 
 	dm.addDevice(device)
-	err := device.RunDevice(dm.signals)
+	err := device.RunDevice(dm.signals, dm.backlightConfig)
 
 	if err != nil {
 		return err

@@ -6,6 +6,7 @@ import (
 	"gitlab.com/gomidi/midi/v2"
 	"gitlab.com/gomidi/midi/v2/drivers"
 	"log"
+	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	"midi_manipulator/pkg/model"
 	"sync"
@@ -32,12 +33,16 @@ func (md *MidiDevice) GetAlias() string {
 	return md.name
 }
 
-func (md *MidiDevice) ExecuteCommand(command model.MidiCommand) error {
+func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
 	switch v := command.(type) {
 	case model.TurnLightOnCommand:
-		md.turnLightOn(command.(model.TurnLightOnCommand))
+		md.turnLightOn(command.(model.TurnLightOnCommand), backlightConfig)
 	case model.TurnLightOffCommand:
-		md.turnLightOff(command.(model.TurnLightOffCommand))
+		md.turnLightOff(command.(model.TurnLightOffCommand), backlightConfig)
+	case model.SingleBlinkCommand:
+		md.singleBlink(command.(model.SingleBlinkCommand), backlightConfig)
+	case model.SingleReversedBlinkCommand:
+		md.singleReversedBlink(command.(model.SingleReversedBlinkCommand), backlightConfig)
 	default:
 		fmt.Printf("Unknown command with type: \"%T\"\n", v)
 	}
@@ -45,14 +50,12 @@ func (md *MidiDevice) ExecuteCommand(command model.MidiCommand) error {
 }
 
 func (md *MidiDevice) StopDevice() error {
-	log.Printf("MIDI DEVICE {%s} STOPPING ...\n", md.name)
 	md.stop <- true
 	return nil
 }
 
-func (md *MidiDevice) RunDevice(signals chan<- core.Signal) error {
-	log.Printf("MIDI DEVICE {%s} CONNECTING ...\n", md.name)
-	go md.startupIllumination()
+func (md *MidiDevice) RunDevice(signals chan<- core.Signal, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
+	go md.startupIllumination(backlightConfig)
 	go md.listen(signals)
 	return nil
 }

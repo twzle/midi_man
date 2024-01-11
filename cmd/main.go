@@ -9,6 +9,7 @@ import (
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 	"go.uber.org/zap"
 	"log"
+	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	midiHermophrodite "midi_manipulator/pkg/midi"
 	"midi_manipulator/pkg/model"
@@ -25,16 +26,6 @@ func main() {
 		log.Fatal(fmt.Errorf("error while reading config: %w", err))
 	}
 
-	err = userConfig.Validate()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = systemConfig.Validate()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	setupApp(systemConfig, userConfig)
 }
 
@@ -45,6 +36,13 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	}
 	deviceManager := midiHermophrodite.NewDeviceManager(logger)
 	defer deviceManager.Close()
+
+	backlightConfig, err := backlight.InitConfig("configs/backlight_config.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	deviceManager.SetBacklightConfig(backlightConfig)
 
 	agentConf := core.AgentConfiguration{
 		System:          systemConfig,
@@ -61,6 +59,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 			hubman.WithSignal[model.NotePushed](),
 			hubman.WithSignal[model.NoteHold](),
 			hubman.WithSignal[model.NoteReleased](),
+			hubman.WithSignal[model.NoteReleasedAfterHold](),
 			hubman.WithSignal[model.ControlPushed](),
 			hubman.WithChannel(signals),
 		),
