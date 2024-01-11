@@ -8,6 +8,7 @@ func (db *DecodedDeviceBacklightConfig) TurnLight(deviceAlias string, key byte, 
 	mapping, values := db.FindArguments(deviceAlias, key, color, status)
 
 	if mapping == nil || values == nil {
+		// TODO: create global variable for errors.New in order to validate outside
 		return nil, errors.New("parameters for TurnLight command were not found")
 	}
 
