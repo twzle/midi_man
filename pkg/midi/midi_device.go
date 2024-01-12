@@ -108,7 +108,7 @@ func (md *MidiDevice) connectInPort() error {
 func (md *MidiDevice) applyConfiguration(config config.DeviceConfig) {
 	md.name = config.DeviceName
 	md.active = config.Active
-	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
+	md.holdDelta = time.Duration(float64(time.Millisecond) * config.HoldDelta)
 	md.clickBuffer = make(map[uint8]*KeyContext)
 	md.stop = make(chan bool, 1)
 	md.namespace = config.Namespace
@@ -116,7 +116,7 @@ func (md *MidiDevice) applyConfiguration(config config.DeviceConfig) {
 
 func (md *MidiDevice) updateConfiguration(config config.DeviceConfig) {
 	md.active = config.Active
-	md.holdDelta = time.Duration(float64(time.Second) * config.HoldDelta)
+	md.holdDelta = time.Duration(float64(time.Millisecond) * config.HoldDelta)
 }
 
 func NewDevice(deviceConfig config.DeviceConfig) (*MidiDevice, error) {
