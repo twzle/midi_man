@@ -17,10 +17,13 @@ type DeviceManager struct {
 	mutex           sync.Mutex
 	signals         chan core.Signal
 	backlightConfig *backlight.DecodedDeviceBacklightConfig
-	logger  *zap.Logger
+	logger          *zap.Logger
 
 	activeNamespace string
 	nmMutex         sync.RWMutex
+
+	deviceNames []string
+	dMutex      sync.Mutex
 }
 
 func (dm *DeviceManager) SetBacklightConfig(cfg *backlight.DecodedDeviceBacklightConfig) {
@@ -40,10 +43,26 @@ func (dm *DeviceManager) addDevice(device *MidiDevice) {
 	dm.devices[device.GetAlias()] = device
 }
 
+func (dm *DeviceManager) addDeviceName(deviceName string) {
+	dm.dMutex.Lock()
+	defer dm.dMutex.Unlock()
+	dm.deviceNames = append(dm.deviceNames, deviceName)
+}
+
 func (dm *DeviceManager) removeDevice(alias string) {
 	dm.mutex.Lock()
 	defer dm.mutex.Unlock()
 	delete(dm.devices, alias)
+}
+
+func (dm *DeviceManager) removeDeviceName(alias string) {
+	dm.dMutex.Lock()
+	defer dm.dMutex.Unlock()
+	for i, deviceName := range dm.deviceNames {
+		if deviceName == alias {
+			dm.deviceNames = append(dm.deviceNames[:i], dm.deviceNames[i+1:]...)
+		}
+	}
 }
 
 func (dm *DeviceManager) Close() {
@@ -86,6 +105,7 @@ func (dm *DeviceManager) AddDevice(device *MidiDevice) error {
 	}
 
 	dm.addDevice(device)
+	dm.addDeviceName(device.GetAlias())
 	err := device.RunDevice(dm.signals, dm.backlightConfig)
 
 	if err != nil {
@@ -110,6 +130,7 @@ func (dm *DeviceManager) RemoveDevice(alias string) error {
 	}
 
 	dm.removeDevice(alias)
+	dm.removeDeviceName(alias)
 
 	return nil
 }

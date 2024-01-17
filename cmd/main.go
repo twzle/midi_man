@@ -51,6 +51,8 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	}
 
 	deviceManager.UpdateDevices(userConfig.MidiDevices)
+	go midiHermophrodite.CheckDevicesHealth(deviceManager)
+
 	signals := deviceManager.GetSignals()
 
 	app := hubman.NewAgentApp(
