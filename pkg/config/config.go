@@ -6,15 +6,15 @@ import (
 )
 
 type TriggerValues struct {
-	Increment uint8 `json:"increment" yaml:"increment"`
-	Decrement uint8 `json:"decrement" yaml:"decrement"`
+	Increment byte `json:"increment" yaml:"increment"`
+	Decrement byte `json:"decrement" yaml:"decrement"`
 }
 
 type Controls struct {
-	Keys         []uint8       `json:"keys" yaml:"keys"`
+	Keys         []byte        `json:"keys" yaml:"keys"`
 	Rotate       bool          `json:"rotate" yaml:"rotate"`
-	ValueRange   [2]uint8      `json:"value_range" yaml:"value_range"`
-	InitialValue uint8         `json:"initial_value" yaml:"initial_value"`
+	ValueRange   [2]byte       `json:"value_range" yaml:"value_range"`
+	InitialValue byte          `json:"initial_value" yaml:"initial_value"`
 	Triggers     TriggerValues `json:"triggers" yaml:"triggers"`
 }
 

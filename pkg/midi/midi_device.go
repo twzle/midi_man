@@ -22,7 +22,7 @@ type MidiDevice struct {
 	mutex       sync.Mutex
 	stop        chan bool
 	namespace   string
-	controls    []*Control
+	controls    map[byte]*Control
 }
 
 type MidiPorts struct {
@@ -113,6 +113,7 @@ func (md *MidiDevice) applyConfiguration(deviceConfig config.DeviceConfig) {
 	md.clickBuffer = make(map[uint8]*KeyContext)
 	md.stop = make(chan bool, 1)
 	md.namespace = deviceConfig.Namespace
+	md.controls = make(map[byte]*Control)
 	md.applyControls(deviceConfig.Controls)
 }
 
@@ -126,7 +127,7 @@ func (md *MidiDevice) applyControls(controls config.Controls) {
 			DecrementTrigger: controls.Triggers.Decrement, 
 			IncrementTrigger: controls.Triggers.Increment,
 		}
-		md.controls = append(md.controls, &control)
+		md.controls[controlKey] = &control
 	}
 }
 
