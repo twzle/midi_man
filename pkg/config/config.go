@@ -5,11 +5,25 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type TriggerValues struct {
+	Increment byte `json:"increment" yaml:"increment"`
+	Decrement byte `json:"decrement" yaml:"decrement"`
+}
+
+type Controls struct {
+	Keys         []byte        `json:"keys" yaml:"keys"`
+	Rotate       bool          `json:"rotate" yaml:"rotate"`
+	ValueRange   [2]byte       `json:"value_range" yaml:"value_range"`
+	InitialValue byte          `json:"initial_value" yaml:"initial_value"`
+	Triggers     TriggerValues `json:"triggers" yaml:"triggers"`
+}
+
 type DeviceConfig struct {
-	DeviceName string  `json:"device_name" yaml:"device_name"`
-	Active     bool    `json:"active" yaml:"active"`
-	HoldDelta  float64 `json:"hold_delta" yaml:"hold_delta"`
-	Namespace  string  `json:"namespace" yaml:"namespace"`
+	DeviceName string   `json:"device_name" yaml:"device_name"`
+	Active     bool     `json:"active" yaml:"active"`
+	HoldDelta  float64  `json:"hold_delta" yaml:"hold_delta"`
+	Namespace  string   `json:"namespace" yaml:"namespace"`
+	Controls   Controls `json:"accumulate_controls" yaml:"accumulate_controls"`
 }
 
 type UserConfig struct {

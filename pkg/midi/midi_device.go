@@ -22,6 +22,7 @@ type MidiDevice struct {
 	mutex       sync.Mutex
 	stop        chan bool
 	namespace   string
+	controls    map[byte]*Control
 }
 
 type MidiPorts struct {
@@ -105,13 +106,29 @@ func (md *MidiDevice) connectInPort() error {
 	return nil
 }
 
-func (md *MidiDevice) applyConfiguration(config config.DeviceConfig) {
-	md.name = config.DeviceName
-	md.active = config.Active
-	md.holdDelta = time.Duration(float64(time.Millisecond) * config.HoldDelta)
+func (md *MidiDevice) applyConfiguration(deviceConfig config.DeviceConfig) {
+	md.name = deviceConfig.DeviceName
+	md.active = deviceConfig.Active
+	md.holdDelta = time.Duration(float64(time.Millisecond) * deviceConfig.HoldDelta)
 	md.clickBuffer = make(map[uint8]*KeyContext)
 	md.stop = make(chan bool, 1)
-	md.namespace = config.Namespace
+	md.namespace = deviceConfig.Namespace
+	md.controls = make(map[byte]*Control)
+	md.applyControls(deviceConfig.Controls)
+}
+
+func (md *MidiDevice) applyControls(controls config.Controls) {
+	for _, controlKey := range controls.Keys {
+		control := Control{
+			Key: controlKey, 
+			Rotate: controls.Rotate, 
+			ValueRange: controls.ValueRange, 
+			InitialValue: controls.InitialValue, 
+			DecrementTrigger: controls.Triggers.Decrement, 
+			IncrementTrigger: controls.Triggers.Increment,
+		}
+		md.controls[controlKey] = &control
+	}
 }
 
 func (md *MidiDevice) updateConfiguration(config config.DeviceConfig) {

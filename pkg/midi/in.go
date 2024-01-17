@@ -38,9 +38,12 @@ func (md *MidiDevice) getMidiMessage(msg midi.Message, _ int32) {
 		}
 	case msg.GetControlChange(&channel, &key, &velocity):
 		// CONTROL PUSHED STATUS
-		kctx := KeyContext{key: key, velocity: velocity, usedAt: time.Now(),
-			status: model.ControlPushed{Device: md.name, KeyCode: int(key), Value: int(velocity)}}
-		md.clickBuffer.SetKeyContext(key, kctx)
+		velocity, valid := md.handleControls(key, velocity)
+		if valid {
+			kctx := KeyContext{key: key, velocity: velocity, usedAt: time.Now(),
+				status: model.ControlPushed{Device: md.name, KeyCode: int(key), Value: int(velocity)}}
+			md.clickBuffer.SetKeyContext(key, kctx)
+			}
 	}
 }
 
