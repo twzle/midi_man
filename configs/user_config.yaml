@@ -1,10 +1,10 @@
 midi_devices:
   - device_name: MPD226
     active: true
-    hold_delta: 1
+    hold_delta: 1000
     namespace: default
     accumulate_controls:
-      keys: [5, 16, 17, 18, 19, 118]
+      keys: [16, 17, 18, 19, 118]
       rotate: false
       value_range: [0, 127]
       initial_value: 0
