@@ -54,74 +54,78 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	go midiHermophrodite.CheckDevicesHealth(deviceManager)
 
 	signals := deviceManager.GetSignals()
-
-	app := hubman.NewAgentApp(
-		agentConf,
-		hubman.WithManipulator(
-			hubman.WithSignal[model.NotePushed](),
-			hubman.WithSignal[model.NoteHold](),
-			hubman.WithSignal[model.NoteReleased](),
-			hubman.WithSignal[model.NoteReleasedAfterHold](),
-			hubman.WithSignal[model.ControlPushed](),
-			hubman.WithChannel(signals),
+	app := core.NewContainer(agentConf.System.Logging)
+	app.RegisterPlugin(
+		hubman.NewAgentPlugin(
+			logger,
+			agentConf,
+			hubman.WithManipulator(
+				hubman.WithSignal[model.NotePushed](),
+				hubman.WithSignal[model.NoteHold](),
+				hubman.WithSignal[model.NoteReleased](),
+				hubman.WithSignal[model.NoteReleasedAfterHold](),
+				hubman.WithSignal[model.ControlPushed](),
+				hubman.WithChannel(signals),
+			),
+			hubman.WithExecutor(
+				hubman.WithCommand(model.TurnLightOnCommand{},
+					func(command core.SerializedCommand, parser executor.CommandParser) {
+						var cmd model.TurnLightOnCommand
+						parser(&cmd)
+						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+						if err != nil {
+							log.Println(err)
+						}
+					}),
+				hubman.WithCommand(model.TurnLightOffCommand{},
+					func(command core.SerializedCommand, parser executor.CommandParser) {
+						var cmd model.TurnLightOffCommand
+						parser(&cmd)
+						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+						if err != nil {
+							log.Println(err)
+						}
+					}),
+				hubman.WithCommand(model.SingleBlinkCommand{},
+					func(command core.SerializedCommand, parser executor.CommandParser) {
+						var cmd model.SingleBlinkCommand
+						parser(&cmd)
+						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+						if err != nil {
+							log.Println(err)
+						}
+					}),
+				hubman.WithCommand(model.SingleReversedBlinkCommand{},
+					func(command core.SerializedCommand, parser executor.CommandParser) {
+						var cmd model.SingleReversedBlinkCommand
+						parser(&cmd)
+						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+						if err != nil {
+							log.Println(err)
+						}
+					}),
+				hubman.WithCommand(model.ContinuousBlinkCommand{},
+					func(command core.SerializedCommand, parser executor.CommandParser) {
+						var cmd model.ContinuousBlinkCommand
+						parser(&cmd)
+						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+						if err != nil {
+							log.Println(err)
+						}
+					}),
+				hubman.WithCommand(model.SetActiveNamespaceCommand{},
+					func(s core.SerializedCommand, p executor.CommandParser) {
+						var cmd model.SetActiveNamespaceCommand
+						p(&cmd)
+						deviceManager.SetActiveNamespace(cmd.Namespace, cmd.Device)
+					}),
+			),
+			hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
+				update, _ := configuration.User.(*config.UserConfig)
+				deviceManager.UpdateDevices(update.MidiDevices)
+			}),
 		),
-		hubman.WithExecutor(
-			hubman.WithCommand(model.TurnLightOnCommand{},
-				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd model.TurnLightOnCommand
-					parser(&cmd)
-					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-					if err != nil {
-						log.Println(err)
-					}
-				}),
-			hubman.WithCommand(model.TurnLightOffCommand{},
-				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd model.TurnLightOffCommand
-					parser(&cmd)
-					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-					if err != nil {
-						log.Println(err)
-					}
-				}),
-			hubman.WithCommand(model.SingleBlinkCommand{},
-				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd model.SingleBlinkCommand
-					parser(&cmd)
-					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-					if err != nil {
-						log.Println(err)
-					}
-				}),
-			hubman.WithCommand(model.SingleReversedBlinkCommand{},
-				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd model.SingleReversedBlinkCommand
-					parser(&cmd)
-					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-					if err != nil {
-						log.Println(err)
-					}
-				}),
-			hubman.WithCommand(model.ContinuousBlinkCommand{},
-				func(command core.SerializedCommand, parser executor.CommandParser) {
-					var cmd model.ContinuousBlinkCommand
-					parser(&cmd)
-					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-					if err != nil {
-						log.Println(err)
-					}
-				}),
-			hubman.WithCommand(model.SetActiveNamespaceCommand{},
-				func(s core.SerializedCommand, p executor.CommandParser) {
-					var cmd model.SetActiveNamespaceCommand
-					p(&cmd)
-					deviceManager.SetActiveNamespace(cmd.Namespace, cmd.Device)
-				}),
-		),
-		hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
-			update, _ := configuration.User.(*config.UserConfig)
-			deviceManager.UpdateDevices(update.MidiDevices)
-		}),
 	)
+
 	<-app.WaitShutdown()
 }

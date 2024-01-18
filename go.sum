@@ -12,6 +12,8 @@ git.miem.hse.ru/hubman/hubman-lib v0.0.19 h1:EAUtWytmQ2BL7KSZsWN27rsGfMH/utkpfTy
 git.miem.hse.ru/hubman/hubman-lib v0.0.19/go.mod h1:9m3Jlu/oABdSHwRyo6zuCz1JVK1eok/iud9mUtbk+S8=
 git.miem.hse.ru/hubman/hubman-lib v0.0.20 h1:1vDmBCINmQ27oGgRxCnYnDR2o9b6zEhPNIF4wY+KmY4=
 git.miem.hse.ru/hubman/hubman-lib v0.0.20/go.mod h1:dqzfxhYcgHY3Akz8SmEYUR9eauwgsDDJfef6zfiqPeI=
+git.miem.hse.ru/hubman/hubman-lib v1.0.0 h1:UIAcDfvS289DObWo6Lx7+jQrkNiwvmEbKJPVSQtVf7Y=
+git.miem.hse.ru/hubman/hubman-lib v1.0.0/go.mod h1:dqzfxhYcgHY3Akz8SmEYUR9eauwgsDDJfef6zfiqPeI=
 github.com/RaveNoX/go-jsoncommentstrip v1.0.0/go.mod h1:78ihd09MekBnJnxpICcwzCMzGrKSKYe4AqU6PDYYpjk=
 github.com/apapsch/go-jsonmerge/v2 v2.0.0 h1:axGnT1gRIfimI7gJifB699GoE/oq+F2MU7Dml6nw9rQ=
 github.com/apapsch/go-jsonmerge/v2 v2.0.0/go.mod h1:lvDnEdqiQrp0O42VQGgmlKpxL1AP2+08jFMw88y4klk=
