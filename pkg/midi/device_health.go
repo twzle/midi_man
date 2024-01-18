@@ -1,12 +1,13 @@
 package midi
 
 import (
-	"gitlab.com/gomidi/midi/v2"
-	"gitlab.com/gomidi/midi/v2/drivers"
-	"go.uber.org/zap"
 	"os"
 	"strings"
 	"time"
+
+	"gitlab.com/gomidi/midi/v2"
+	"gitlab.com/gomidi/midi/v2/drivers"
+	"go.uber.org/zap"
 )
 
 var healthCheckDelay = 400 * time.Millisecond
@@ -32,7 +33,7 @@ func CheckDevicesHealth(manager *DeviceManager) {
 func HasDeviceWithName[T drivers.Port](deviceName string, deviceList []T) bool {
 	for _, portName := range deviceList {
 		validPortName := GetValidPortName(portName.String())
-		if deviceName == validPortName {
+		if strings.HasPrefix(validPortName, deviceName) {
 			return true
 		}
 	}
