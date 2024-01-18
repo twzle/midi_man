@@ -5,6 +5,8 @@ go 1.21
 require (
 	git.miem.hse.ru/hubman/hubman-lib v1.0.0
 	gitlab.com/gomidi/midi/v2 v2.0.30
+	go.uber.org/zap v1.26.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -25,7 +27,5 @@ require (
 	github.com/redis/go-redis/v9 v9.3.0 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.26.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	moul.io/chizap v1.0.3 // indirect
 )
