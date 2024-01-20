@@ -57,6 +57,7 @@ func (md *MidiDevice) StopDevice() error {
 
 func (md *MidiDevice) RunDevice(signals chan<- core.Signal, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
 	go md.startupIllumination(backlightConfig)
+	md.sendNamespaceChangedSignal(signals)
 	go md.listen(signals)
 	return nil
 }
@@ -131,9 +132,16 @@ func (md *MidiDevice) applyControls(controls config.Controls) {
 	}
 }
 
-func (md *MidiDevice) updateConfiguration(config config.DeviceConfig) {
+func (md *MidiDevice) updateConfiguration(config config.DeviceConfig, signals chan<- core.Signal) {
+	md.mutex.Lock()
 	md.active = config.Active
 	md.holdDelta = time.Duration(float64(time.Millisecond) * config.HoldDelta)
+	if md.namespace != config.Namespace {
+		md.namespace = config.Namespace
+		md.sendNamespaceChangedSignal(signals)
+	}
+	md.applyControls(config.Controls)
+	md.mutex.Unlock()
 }
 
 func NewDevice(deviceConfig config.DeviceConfig) (*MidiDevice, error) {
@@ -146,4 +154,12 @@ func NewDevice(deviceConfig config.DeviceConfig) (*MidiDevice, error) {
 		return nil, err
 	}
 	return &midiDevice, nil
+}
+
+func (md *MidiDevice) sendNamespaceChangedSignal(signals chan<- core.Signal){
+	signal := model.NamespaceChanged{
+		Device: md.name,
+		Namespace: md.namespace,
+	}
+	signals <- signal
 }
