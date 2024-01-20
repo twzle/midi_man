@@ -77,9 +77,6 @@ func (s ControlPushed) Description() string {
 	return "ControlPushed - signal represents state of key with 'Control' type right off it was pressed on a device"
 }
 
-
-// ControlPushed В MIDI Control имеет только один тип событий "ControlChange",
-// поэтому длительность и конец нажатия здесь не отслеживаются
 type NamespaceChanged struct {
 	Device    string `hubman:"device"`
 	Namespace string `hubman:"namespace"`
