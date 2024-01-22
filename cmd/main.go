@@ -50,9 +50,6 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
 
-	deviceManager.UpdateDevices(userConfig.MidiDevices)
-	go midiHermophrodite.CheckDevicesHealth(deviceManager)
-
 	signals := deviceManager.GetSignals()
 	app := core.NewContainer(agentConf.System.Logging)
 	app.RegisterPlugin(
@@ -128,5 +125,8 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 		),
 	)
 
+	deviceManager.UpdateDevices(userConfig.MidiDevices)
+	go midiHermophrodite.CheckDevicesHealth(deviceManager)
+	
 	<-app.WaitShutdown()
 }

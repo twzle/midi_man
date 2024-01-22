@@ -183,7 +183,7 @@ func (dm *DeviceManager) SetActiveNamespace(newActive string, device string) {
 		d.mutex.Lock()
 		d.namespace = newActive
 		d.mutex.Unlock()
-		go d.sendNamespaceChangedSignal(dm.signals)
+		d.sendNamespaceChangedSignal(dm.signals)
 	}
 	dm.mutex.Unlock()
 }
