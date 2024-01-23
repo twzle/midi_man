@@ -164,5 +164,4 @@ func (md *MidiDevice) sendNamespaceChangedSignal(signals chan<- core.Signal, old
 		NewNamespace: newNamespace,
 	}
 	signals <- signal
-	log.Println(signal.Code(), signal)
 }
