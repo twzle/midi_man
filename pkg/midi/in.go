@@ -10,7 +10,6 @@ import (
 
 func (md *MidiDevice) sendSignal(signals chan<- core.Signal, signal core.Signal) {
 	if signal != nil {
-		log.Println(signal.Code(), signal)
 		signals <- signal
 	}
 }

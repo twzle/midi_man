@@ -76,3 +76,17 @@ func (s ControlPushed) Code() string {
 func (s ControlPushed) Description() string {
 	return "ControlPushed - signal represents state of key with 'Control' type right off it was pressed on a device"
 }
+
+type NamespaceChanged struct {
+	Device       string `hubman:"device"`
+	OldNamespace string `hubman:"old_namespace"`
+	NewNamespace string `hubman:"new_namespace"`
+}
+
+func (s NamespaceChanged) Code() string {
+	return "NamespaceChanged"
+}
+
+func (s NamespaceChanged) Description() string {
+	return "NamespaceChanged - signal represents successful namespace change"
+}

@@ -50,9 +50,6 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
 
-	deviceManager.UpdateDevices(userConfig.MidiDevices)
-	go midiHermophrodite.CheckDevicesHealth(deviceManager)
-
 	signals := deviceManager.GetSignals()
 	app := core.NewContainer(agentConf.System.Logging)
 	app.RegisterPlugin(
@@ -65,6 +62,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 				hubman.WithSignal[model.NoteReleased](),
 				hubman.WithSignal[model.NoteReleasedAfterHold](),
 				hubman.WithSignal[model.ControlPushed](),
+				hubman.WithSignal[model.NamespaceChanged](),
 				hubman.WithChannel(signals),
 			),
 			hubman.WithExecutor(
@@ -127,5 +125,8 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 		),
 	)
 
+	deviceManager.UpdateDevices(userConfig.MidiDevices)
+	go midiHermophrodite.CheckDevicesHealth(deviceManager)
+	
 	<-app.WaitShutdown()
 }
