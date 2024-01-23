@@ -3,7 +3,7 @@ module midi_manipulator
 go 1.21
 
 require (
-	git.miem.hse.ru/hubman/hubman-lib v1.0.2
+	git.miem.hse.ru/hubman/hubman-lib v1.0.3
 	gitlab.com/gomidi/midi/v2 v2.0.30
 	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
