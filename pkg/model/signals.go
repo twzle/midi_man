@@ -78,8 +78,9 @@ func (s ControlPushed) Description() string {
 }
 
 type NamespaceChanged struct {
-	Device    string `hubman:"device"`
-	Namespace string `hubman:"namespace"`
+	Device       string `hubman:"device"`
+	OldNamespace string `hubman:"old_namespace"`
+	NewNamespace string `hubman:"new_namespace"`
 }
 
 func (s NamespaceChanged) Code() string {

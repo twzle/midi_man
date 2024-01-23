@@ -173,17 +173,18 @@ func (dm *DeviceManager) GetSignals() chan core.Signal {
 	return dm.signals
 }
 
-func (dm *DeviceManager) SetActiveNamespace(newActive string, device string) {
-	dm.logger.Info("Setting namespace as active", zap.String("namespace", newActive))
+func (dm *DeviceManager) SetActiveNamespace(newNamespace string, device string) {
+	dm.logger.Info("Setting namespace as active", zap.String("namespace", newNamespace))
 	dm.mutex.Lock()
 	d, ok := dm.devices[device]
 	if !ok {
-		dm.logger.Error("Not found given device for namespace", zap.String("device", device), zap.String("newNamespace", newActive))
+		dm.logger.Error("Not found given device for namespace", zap.String("device", device), zap.String("newNamespace", newNamespace))
 	} else {
+		var oldNamespace = d.namespace
 		d.mutex.Lock()
-		d.namespace = newActive
+		d.namespace = newNamespace
 		d.mutex.Unlock()
-		d.sendNamespaceChangedSignal(dm.signals)
+		d.sendNamespaceChangedSignal(dm.signals, oldNamespace, newNamespace)
 	}
 	dm.mutex.Unlock()
 }
