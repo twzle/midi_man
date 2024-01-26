@@ -7,7 +7,6 @@ import (
 	"git.miem.hse.ru/hubman/hubman-lib/executor"
 	"gitlab.com/gomidi/midi/v2"
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
-	"go.uber.org/zap"
 	"log"
 	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
@@ -30,11 +29,14 @@ func main() {
 }
 
 func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
-	logger, err := zap.NewProduction()
-	if err != nil { // FIXME: use app container api after
-		log.Fatal(err)
+	agentConf := core.AgentConfiguration{
+		System:          systemConfig,
+		User:            userConfig,
+		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
 	}
-	deviceManager := midiHermophrodite.NewDeviceManager(logger)
+
+	app := core.NewContainer(agentConf.System.Logging)
+	deviceManager := midiHermophrodite.NewDeviceManager(app.Logger())
 	defer deviceManager.Close()
 
 	backlightConfig, err := backlight.InitConfig("configs/backlight_config.yaml")
@@ -43,18 +45,11 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	}
 
 	deviceManager.SetBacklightConfig(backlightConfig)
-
-	agentConf := core.AgentConfiguration{
-		System:          systemConfig,
-		User:            userConfig,
-		ParseUserConfig: func(data []byte) (core.Configuration, error) { return config.ParseConfigFromBytes(data) },
-	}
-
 	signals := deviceManager.GetSignals()
-	app := core.NewContainer(agentConf.System.Logging)
+
 	app.RegisterPlugin(
 		hubman.NewAgentPlugin(
-			logger,
+			app.Logger(),
 			agentConf,
 			hubman.WithManipulator(
 				hubman.WithSignal[model.NotePushed](),
@@ -127,6 +122,6 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 
 	deviceManager.UpdateDevices(userConfig.MidiDevices)
 	go midiHermophrodite.CheckDevicesHealth(deviceManager)
-	
+
 	<-app.WaitShutdown()
 }
