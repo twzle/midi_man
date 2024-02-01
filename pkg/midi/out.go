@@ -33,7 +33,10 @@ func (md *MidiDevice) singleBlink(cmd model.SingleBlinkCommand, backlightConfig 
 	}
 }
 
-func (md *MidiDevice) singleReversedBlink(cmd model.SingleReversedBlinkCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) {
+func (md *MidiDevice) singleReversedBlink(
+	cmd model.SingleReversedBlinkCommand,
+	backlightConfig *backlight.DecodedDeviceBacklightConfig,
+) {
 	backlightTimeOffset := time.Duration(backlightConfig.DeviceBacklightTimeOffset[md.name])
 	msg, _ := backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.Off)
 	if msg != nil && md.ports.out != nil {
@@ -46,27 +49,37 @@ func (md *MidiDevice) singleReversedBlink(cmd model.SingleReversedBlinkCommand, 
 	}
 }
 
+func (md *MidiDevice) setActiveNamespace(
+	cmd model.SetActiveNamespaceCommand,
+	_ *backlight.DecodedDeviceBacklightConfig,
+) {
+	oldNamespace := md.namespace
+	md.namespace = cmd.Namespace
+	md.sendNamespaceChangedSignal(md.signals, oldNamespace, cmd.Namespace)
+}
+
+func (md *MidiDevice) turnLightKeyRange(
+	config *backlight.DecodedDeviceBacklightConfig,
+	left, right byte,
+	status backlight.StatusName,
+	backlightTimeOffset time.Duration,
+) {
+	for i := left; i <= right; i++ {
+		sequence, _ := config.TurnLight(md.name, i, "none", status)
+		if len(sequence) == 0 {
+			continue
+		}
+
+		time.Sleep(time.Millisecond * backlightTimeOffset)
+		(*md.ports.out).Send(sequence)
+	}
+}
+
 func (md *MidiDevice) startupIllumination(config *backlight.DecodedDeviceBacklightConfig) {
+	time.Sleep(md.startupDelay)
 	backlightTimeOffset := time.Duration(config.DeviceBacklightTimeOffset[md.name])
 	for _, keyRange := range config.DeviceKeyRangeMap[md.name] {
-		for i := keyRange[0]; i <= keyRange[1]; i++ {
-			sequence, _ := config.TurnLight(md.name, i, "none", backlight.On)
-			if len(sequence) == 0 {
-				continue
-			}
-
-			time.Sleep(time.Millisecond * backlightTimeOffset)
-			(*md.ports.out).Send(sequence)
-		}
-
-		for i := keyRange[0]; i <= keyRange[1]; i++ {
-			sequence, _ := config.TurnLight(md.name, i, "none", backlight.Off)
-			if len(sequence) == 0 {
-				continue
-			}
-
-			time.Sleep(time.Millisecond * backlightTimeOffset)
-			(*md.ports.out).Send(sequence)
-		}
+		md.turnLightKeyRange(config, keyRange[0], keyRange[1], backlight.On, backlightTimeOffset)
+		md.turnLightKeyRange(config, keyRange[0], keyRange[1], backlight.Off, backlightTimeOffset)
 	}
 }

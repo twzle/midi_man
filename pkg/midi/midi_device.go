@@ -2,27 +2,37 @@ package midi
 
 import (
 	"fmt"
-	"git.miem.hse.ru/hubman/hubman-lib/core"
-	"gitlab.com/gomidi/midi/v2"
-	"gitlab.com/gomidi/midi/v2/drivers"
-	"log"
 	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	"midi_manipulator/pkg/model"
 	"sync"
+	"sync/atomic"
 	"time"
+
+	"git.miem.hse.ru/hubman/hubman-lib/core"
+	"gitlab.com/gomidi/midi/v2"
+	"gitlab.com/gomidi/midi/v2/drivers"
+	"go.uber.org/zap"
 )
 
 type MidiDevice struct {
-	name        string
-	active      bool
-	ports       MidiPorts
-	clickBuffer ClickBuffer
-	holdDelta   time.Duration
-	mutex       sync.Mutex
-	stop        chan bool
-	namespace   string
-	controls    map[byte]*Control
+	name              string
+	active            bool
+	ports             MidiPorts
+	clickBuffer       ClickBuffer
+	holdDelta         time.Duration
+	startupDelay      time.Duration
+	reconnectInterval time.Duration
+	mutex             sync.Mutex
+	stopReconnect     chan struct{}
+	stopListen        chan struct{}
+	namespace         string
+	connected         atomic.Bool
+	controls          map[byte]*Control
+	signals           chan<- core.Signal
+	logger            *zap.Logger
+	conf              config.DeviceConfig
+	reconnectedEvent  chan bool
 }
 
 type MidiPorts struct {
@@ -35,6 +45,9 @@ func (md *MidiDevice) GetAlias() string {
 }
 
 func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
+	md.mutex.Lock()
+	defer md.mutex.Unlock()
+
 	switch v := command.(type) {
 	case model.TurnLightOnCommand:
 		md.turnLightOn(command.(model.TurnLightOnCommand), backlightConfig)
@@ -44,45 +57,89 @@ func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig 
 		md.singleBlink(command.(model.SingleBlinkCommand), backlightConfig)
 	case model.SingleReversedBlinkCommand:
 		md.singleReversedBlink(command.(model.SingleReversedBlinkCommand), backlightConfig)
+	case model.SetActiveNamespaceCommand:
+		md.setActiveNamespace(command.(model.SetActiveNamespaceCommand), backlightConfig)
 	default:
-		fmt.Printf("Unknown command with type: \"%T\"\n", v)
+		md.logger.Warn("Unknown command", zap.Any("command", v))
 	}
 	return nil
 }
 
-func (md *MidiDevice) StopDevice() error {
-	md.stop <- true
+func (md *MidiDevice) Stop() {
+	md.stopListen <- struct{}{}
+	close(md.stopListen)
+	md.stopReconnect <- struct{}{}
+	close(md.stopReconnect)
+}
+
+func (md *MidiDevice) RunDevice(backlightConfig *backlight.DecodedDeviceBacklightConfig) {
+	time.Sleep(md.startupDelay)
+	go md.reconnect(backlightConfig)
+	go md.listen()
+}
+
+func (md *MidiDevice) initConnection(backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
+	md.mutex.Lock()
+	defer md.mutex.Unlock()
+
+	if err := md.connectDevice(); err != nil {
+		return err
+	}
+	md.startupIllumination(backlightConfig)
+	md.clickBuffer = make(map[uint8]*KeyContext)
+	md.applyControls(md.conf.Controls)
 	return nil
 }
 
-func (md *MidiDevice) RunDevice(signals chan<- core.Signal, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
-	md.startupIllumination(backlightConfig)
-	md.sendNamespaceChangedSignal(signals, md.namespace, md.namespace)
-	go md.listen(signals)
-	return nil
+func (md *MidiDevice) reconnect(backlightConfig *backlight.DecodedDeviceBacklightConfig) {
+	ticker := time.NewTicker(md.reconnectInterval)
+	for {
+		select {
+		case <-md.stopReconnect:
+			ticker.Stop()
+			return
+		case <-ticker.C:
+			connected := HasDeviceWithName(md.name, midi.GetInPorts()) &&
+				HasDeviceWithName(md.name, midi.GetOutPorts())
+			if md.connected.Load() {
+				if !connected {
+					md.logger.Warn("Device disconnected")
+					md.reconnectedEvent <- connected
+				}
+			} else {
+				if connected {
+					err := md.initConnection(backlightConfig)
+					if err != nil {
+						md.logger.Warn("Unable to connect device", zap.Error(err))
+					} else {
+						md.reconnectedEvent <- connected
+					}
+				} else {
+					md.logger.Debug("No hardware connection to device")
+				}
+			}
+		}
+	}
 }
 
 func (md *MidiDevice) connectDevice() error {
-	var err error
-	in_err := md.connectInPort()
-	out_err := md.connectOutPort()
-
-	if in_err != nil || out_err != nil {
-		err = fmt.Errorf("connection of device \"{%s}\" failed", md.name)
+	if inErr := md.connectInPort(); inErr != nil {
+		return fmt.Errorf("connection of device failed, inPort:\"{%w}\"", inErr)
 	}
-	return err
+	if outErr := md.connectOutPort(); outErr != nil {
+		return fmt.Errorf("connection of device failed, outPort:\"{%w}\"", outErr)
+	}
+	return nil
 }
 
 func (md *MidiDevice) connectOutPort() error {
 	port, err := midi.FindOutPort(md.name)
 	if err != nil {
-		log.Printf("Output port named {%s} was not found\n", md.name)
 		return err
 	}
 
 	port, err = midi.OutPort(port.Number())
 	if err != nil {
-		log.Printf("Output port #{%d} was not found\n", port.Number())
 		return err
 	}
 
@@ -93,13 +150,11 @@ func (md *MidiDevice) connectOutPort() error {
 func (md *MidiDevice) connectInPort() error {
 	port, err := midi.FindInPort(md.name)
 	if err != nil {
-		log.Printf("Input port named {%s} was not found", md.name)
 		return err
 	}
 
 	port, err = midi.InPort(port.Number())
 	if err != nil {
-		log.Printf("Input port #{%d} was not found\n", port.Number())
 		return err
 	}
 
@@ -107,59 +162,52 @@ func (md *MidiDevice) connectInPort() error {
 	return nil
 }
 
-func (md *MidiDevice) applyConfiguration(deviceConfig config.DeviceConfig) {
+func (md *MidiDevice) applyConfiguration(
+	deviceConfig config.DeviceConfig,
+	signals chan<- core.Signal,
+	logger *zap.Logger,
+) {
+	md.conf = deviceConfig
 	md.name = deviceConfig.DeviceName
 	md.active = deviceConfig.Active
-	md.holdDelta = time.Duration(float64(time.Millisecond) * deviceConfig.HoldDelta)
+	md.holdDelta = time.Duration(deviceConfig.HoldDelta) * time.Millisecond
+	md.startupDelay = time.Duration(deviceConfig.StartupDelay) * time.Millisecond
+	md.reconnectInterval = time.Duration(deviceConfig.ReconnectInterval) * time.Millisecond
 	md.clickBuffer = make(map[uint8]*KeyContext)
-	md.stop = make(chan bool, 1)
+	md.stopListen = make(chan struct{})
+	md.stopReconnect = make(chan struct{})
+	md.reconnectedEvent = make(chan bool)
 	md.namespace = deviceConfig.Namespace
-	md.controls = make(map[byte]*Control)
+	md.signals = signals
+	md.logger = logger.With(zap.String("alias", md.name))
 	md.applyControls(deviceConfig.Controls)
 }
 
 func (md *MidiDevice) applyControls(controls config.Controls) {
+	md.controls = make(map[byte]*Control)
 	for _, controlKey := range controls.Keys {
 		control := Control{
-			Key: controlKey, 
-			Rotate: controls.Rotate, 
-			ValueRange: controls.ValueRange, 
-			InitialValue: controls.InitialValue, 
-			DecrementTrigger: controls.Triggers.Decrement, 
+			Key:              controlKey,
+			Rotate:           controls.Rotate,
+			ValueRange:       controls.ValueRange,
+			InitialValue:     controls.InitialValue,
+			DecrementTrigger: controls.Triggers.Decrement,
 			IncrementTrigger: controls.Triggers.Increment,
 		}
 		md.controls[controlKey] = &control
 	}
 }
 
-func (md *MidiDevice) updateConfiguration(config config.DeviceConfig, signals chan<- core.Signal) {
-	md.mutex.Lock()
-	md.active = config.Active
-	md.holdDelta = time.Duration(float64(time.Millisecond) * config.HoldDelta)
-	if md.namespace != config.Namespace {
-		var oldNamespace = md.namespace
-		md.namespace = config.Namespace
-		md.sendNamespaceChangedSignal(signals, oldNamespace, config.Namespace)
-	}
-	md.applyControls(config.Controls)
-	md.mutex.Unlock()
-}
-
-func NewDevice(deviceConfig config.DeviceConfig) (*MidiDevice, error) {
+func NewDevice(deviceConfig config.DeviceConfig, signals chan<- core.Signal, logger *zap.Logger) *MidiDevice {
 	midiDevice := MidiDevice{}
-	midiDevice.applyConfiguration(deviceConfig)
+	midiDevice.applyConfiguration(deviceConfig, signals, logger)
 
-	err := midiDevice.connectDevice()
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return &midiDevice, nil
+	return &midiDevice
 }
 
-func (md *MidiDevice) sendNamespaceChangedSignal(signals chan<- core.Signal, oldNamespace string, newNamespace string){
+func (md *MidiDevice) sendNamespaceChangedSignal(signals chan<- core.Signal, oldNamespace string, newNamespace string) {
 	signal := model.NamespaceChanged{
-		Device: md.name,
+		Device:       md.name,
 		OldNamespace: oldNamespace,
 		NewNamespace: newNamespace,
 	}

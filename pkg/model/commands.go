@@ -76,8 +76,8 @@ func (c ContinuousBlinkCommand) Description() string {
 }
 
 type SetActiveNamespaceCommand struct {
-	Namespace string `hubman:"namespace"`
-	Device    string `hubman:"device"`
+	Namespace   string `hubman:"namespace"`
+	DeviceAlias string `hubman:"device"`
 }
 
 func (s SetActiveNamespaceCommand) Code() string {

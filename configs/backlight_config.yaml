@@ -170,11 +170,11 @@ device_light_configuration:
         statuses:
           on:
             type: Sysex
-            fallback_color: red
+            fallback_color: white
             bytes: F0 47 7F 43 65 00 04 %key %payload F7
           off:
             type: Sysex
-            fallback_color: light_red
+            fallback_color: light_white
             bytes: F0 47 7F 43 65 00 04 %key %payload F7
       - key_range:
           - 70
@@ -184,11 +184,11 @@ device_light_configuration:
         statuses:
           on:
             type: Sysex
-            fallback_color: green
+            fallback_color: white
             bytes: F0 47 7F 43 65 00 04 %key %payload F7
           off:
             type: Sysex
-            fallback_color: light_green
+            fallback_color: light_white
             bytes: F0 47 7F 43 65 00 04 %key %payload F7
       - key_range:
           - 86

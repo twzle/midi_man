@@ -5,6 +5,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const MinReconnectIntervalMs = 1000
+
 type TriggerValues struct {
 	Increment byte `json:"increment" yaml:"increment"`
 	Decrement byte `json:"decrement" yaml:"decrement"`
@@ -19,11 +21,13 @@ type Controls struct {
 }
 
 type DeviceConfig struct {
-	DeviceName string   `json:"device_name" yaml:"device_name"`
-	Active     bool     `json:"active" yaml:"active"`
-	HoldDelta  float64  `json:"hold_delta" yaml:"hold_delta"`
-	Namespace  string   `json:"namespace" yaml:"namespace"`
-	Controls   Controls `json:"accumulate_controls" yaml:"accumulate_controls"`
+	DeviceName        string   `json:"device_name" yaml:"device_name"`
+	StartupDelay      int      `json:"startup_delay" yaml:"startup_delay"`
+	ReconnectInterval int      `json:"reconnect_interval" yaml:"reconnect_interval"`
+	Active            bool     `json:"active" yaml:"active"`
+	HoldDelta         int      `json:"hold_delta" yaml:"hold_delta"`
+	Namespace         string   `json:"namespace" yaml:"namespace"`
+	Controls          Controls `json:"accumulate_controls" yaml:"accumulate_controls"`
 }
 
 type UserConfig struct {
@@ -41,17 +45,36 @@ func (conf *UserConfig) Validate() error {
 		if device.DeviceName == "" {
 			return fmt.Errorf("device #{%d} ({%s}): "+
 				"valid MIDI device_name must be provided in config. "+
-				"Now {%f} is provided",
-				idx, device.DeviceName, device.HoldDelta)
+				"Now {%s} is provided",
+				idx, device.DeviceName, device.DeviceName)
 		}
 		if device.Namespace == "" {
 			return fmt.Errorf("device #{%d} ({%s}) has no namespace specified", idx, device.DeviceName)
 		}
 		if device.HoldDelta < 0 {
-			return fmt.Errorf("device #{%d} ({%s}): "+
-				"valid MIDI hold_delta must be provided in config."+
-				" Now {%f} is provided",
-				idx, device.DeviceName, device.HoldDelta)
+			return fmt.Errorf(
+				"device #{%d} ({%s}): hold_delta must be >=0ms. Now {%d} is provided",
+				idx,
+				device.DeviceName,
+				device.HoldDelta,
+			)
+		}
+		if device.StartupDelay < 0 {
+			return fmt.Errorf(
+				"device #{%d} ({%s}): startup_delay must be >=0ms. Now {%d} is provided",
+				idx,
+				device.DeviceName,
+				device.StartupDelay,
+			)
+		}
+		if device.ReconnectInterval < MinReconnectIntervalMs {
+			return fmt.Errorf(
+				"device #{%d} ({%s}): reconnect_interval must be >= %dms. Now {%d} is provided",
+				idx,
+				device.DeviceName,
+				MinReconnectIntervalMs,
+				device.ReconnectInterval,
+			)
 		}
 	}
 	return nil

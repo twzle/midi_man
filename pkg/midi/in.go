@@ -3,20 +3,24 @@ package midi
 import (
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"gitlab.com/gomidi/midi/v2"
-	"log"
+	"go.uber.org/zap"
 	"midi_manipulator/pkg/model"
 	"time"
 )
 
-func (md *MidiDevice) sendSignal(signals chan<- core.Signal, signal core.Signal) {
-	if signal != nil {
-		signals <- signal
+func (md *MidiDevice) sendSignals(signals []core.Signal) {
+	for _, signal := range signals {
+		if signal != nil {
+			md.logger.Debug("Received signal from MIDI device", zap.String("signal", string(signal.Code())), zap.Any("payload", signal))
+			md.signals <- signal
+		}
 	}
 }
 
 func (md *MidiDevice) getMidiMessage(msg midi.Message, _ int32) {
 	md.mutex.Lock()
 	defer md.mutex.Unlock()
+
 	var channel, key, velocity uint8
 	switch {
 	case msg.GetNoteOn(&channel, &key, &velocity):
@@ -42,13 +46,14 @@ func (md *MidiDevice) getMidiMessage(msg midi.Message, _ int32) {
 			kctx := KeyContext{key: key, velocity: velocity, usedAt: time.Now(),
 				status: model.ControlPushed{Device: md.name, KeyCode: int(key), Value: int(velocity)}}
 			md.clickBuffer.SetKeyContext(key, kctx)
-			}
+		}
 	}
 }
 
 func (md *MidiDevice) messageToSignal() []core.Signal {
 	md.mutex.Lock()
 	defer md.mutex.Unlock()
+
 	var signalSequence []core.Signal
 	for _, kctx := range md.clickBuffer {
 		switch kctx.status.(type) {
@@ -109,23 +114,26 @@ func (md *MidiDevice) messageToSignal() []core.Signal {
 	return signalSequence
 }
 
-func (md *MidiDevice) listen(signals chan<- core.Signal) {
-	stop, err := midi.ListenTo(*md.ports.in, md.getMidiMessage, midi.UseSysEx())
-
-	if err != nil {
-		log.Printf("ERROR: %s\n", err)
-		return
-	}
-
+func (md *MidiDevice) listen() {
+	stopMidiListener := func() {}
 	for {
-		signalSequence := md.messageToSignal()
 		select {
-		case <-md.stop:
-			stop()
+		case <-md.stopListen:
+			stopMidiListener()
 			return
+		case connected := <-md.reconnectedEvent:
+			md.connected.Store(connected)
+			if !connected {
+				continue
+			}
+			var err error
+			stopMidiListener, err = midi.ListenTo(*md.ports.in, md.getMidiMessage, midi.UseSysEx())
+			if err != nil {
+				md.logger.Warn("error in init listen", zap.Error(err))
+			}
 		default:
-			for _, signal := range signalSequence {
-				md.sendSignal(signals, signal)
+			if md.connected.Load() {
+				md.sendSignals(md.messageToSignal())
 			}
 		}
 	}
