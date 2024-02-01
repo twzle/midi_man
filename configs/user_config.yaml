@@ -1,5 +1,7 @@
 midi_devices:
   - device_name: MPD226
+    startup_delay: 1000
+    reconnect_interval: 2000
     active: true
     hold_delta: 1000
     namespace: default

@@ -1,17 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"git.miem.hse.ru/hubman/hubman-lib"
-	"git.miem.hse.ru/hubman/hubman-lib/core"
-	"git.miem.hse.ru/hubman/hubman-lib/executor"
-	"gitlab.com/gomidi/midi/v2"
-	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
+	"go.uber.org/zap"
 	"log"
 	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	midiHermophrodite "midi_manipulator/pkg/midi"
 	"midi_manipulator/pkg/model"
+
+	"git.miem.hse.ru/hubman/hubman-lib"
+	"git.miem.hse.ru/hubman/hubman-lib/core"
+	"git.miem.hse.ru/hubman/hubman-lib/executor"
+	"gitlab.com/gomidi/midi/v2"
+	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 
 	err := core.ReadConfig(systemConfig, userConfig)
 	if err != nil {
-		log.Fatal(fmt.Errorf("error while reading config: %w", err))
+		log.Fatalf("error while reading config: %e", err)
 	}
 
 	setupApp(systemConfig, userConfig)
@@ -36,12 +37,13 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	}
 
 	app := core.NewContainer(agentConf.System.Logging)
-	deviceManager := midiHermophrodite.NewDeviceManager(app.Logger())
+	logger := app.Logger()
+	deviceManager := midiHermophrodite.NewDeviceManager(logger)
 	defer deviceManager.Close()
 
 	backlightConfig, err := backlight.InitConfig("configs/backlight_config.yaml")
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("can't init backlight config", zap.Error(err))
 	}
 
 	deviceManager.SetBacklightConfig(backlightConfig)
@@ -67,7 +69,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							log.Println(err)
+							logger.Info("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.TurnLightOffCommand{},
@@ -76,7 +78,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							log.Println(err)
+							logger.Info("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.SingleBlinkCommand{},
@@ -85,7 +87,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							log.Println(err)
+							logger.Info("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.SingleReversedBlinkCommand{},
@@ -94,7 +96,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							log.Println(err)
+							logger.Info("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.ContinuousBlinkCommand{},
@@ -103,14 +105,17 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							log.Println(err)
+							logger.Info("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.SetActiveNamespaceCommand{},
-					func(s core.SerializedCommand, p executor.CommandParser) {
+					func(s core.SerializedCommand, parser executor.CommandParser) {
 						var cmd model.SetActiveNamespaceCommand
-						p(&cmd)
-						deviceManager.SetActiveNamespace(cmd.Namespace, cmd.Device)
+						parser(&cmd)
+						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+						if err != nil {
+							logger.Info("Can't execute command", zap.Error(err))
+						}
 					}),
 			),
 			hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
@@ -121,7 +126,6 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	)
 
 	deviceManager.UpdateDevices(userConfig.MidiDevices)
-	go midiHermophrodite.CheckDevicesHealth(deviceManager)
 
 	<-app.WaitShutdown()
 }
