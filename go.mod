@@ -3,7 +3,7 @@ module midi_manipulator
 go 1.21
 
 require (
-	git.miem.hse.ru/hubman/hubman-lib v1.0.5
+	git.miem.hse.ru/hubman/hubman-lib v1.0.7
 	gitlab.com/gomidi/midi/v2 v2.0.30
 	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -27,5 +27,6 @@ require (
 	github.com/redis/go-redis/v9 v9.3.0 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	golang.org/x/exp v0.0.0-20240205201215-2c58cdc269a3 // indirect
 	moul.io/chizap v1.0.3 // indirect
 )
