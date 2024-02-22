@@ -331,7 +331,7 @@ device_light_configuration:
             fallback_color: channel
             bytes: B0 %key %payload
   - device_name: Arduino Due
-    backlight_time_offset: 50
+    backlight_time_offset: 100
     color_spaces:
       - color_space_id: 1
         on:
@@ -354,4 +354,71 @@ device_light_configuration:
           off:
             type: NoteOff
             fallback_color: black
-            bytes: 80 %key %payload          
+            bytes: 80 %key %payload
+  - device_name: TY HD 500 Switcher
+    backlight_time_offset: 50
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 67
+          - 74
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+      - key_range:
+            - 80
+            - 87
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload        
+      - key_range:
+          - 97
+          - 102
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+      - key_range:
+          - 31
+          - 33
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
