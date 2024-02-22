@@ -65,7 +65,7 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.DeviceConfig) {
 	dm.mutex.Lock()
 	defer dm.mutex.Unlock()
 
-	dm.logger.Info("Updating devices", zap.Int("deviceCount", len(midiConfig)))
+	dm.logger.Info("Updating devices", zap.Int("deviceCount", len(midiConfig)), zap.Any("devices", midiConfig))
 
 	for _, device := range dm.devices {
 		device.Stop()

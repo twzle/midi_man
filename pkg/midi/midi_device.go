@@ -139,6 +139,7 @@ func (md *MidiDevice) connectOutPort() error {
 	for _, inPort := range midi.GetOutPorts() {
 		md.logger.Debug("Found out midi port", zap.String("name", inPort.String()), zap.Int("num", inPort.Number()))
 		if strings.Contains(inPort.String(), md.name) || strings.Contains(md.name, inPort.String()) {
+			md.logger.Info("Matched midi out port", zap.String("name", inPort.String()), zap.Int("num", inPort.Number()))
 			portNum = inPort.Number()
 			break
 		}
@@ -161,6 +162,7 @@ func (md *MidiDevice) connectInPort() error {
 		md.logger.Debug("Found in midi port", zap.String("name", inPort.String()), zap.Int("num", inPort.Number()))
 		if strings.Contains(inPort.String(), md.name) || strings.Contains(md.name, inPort.String()) {
 			portNum = inPort.Number()
+			md.logger.Info("Matched midi in port", zap.String("name", inPort.String()), zap.Int("num", inPort.Number()))
 			break
 		}
 	}
