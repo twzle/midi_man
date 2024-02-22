@@ -1,10 +1,12 @@
 package midi
 
 import (
+	"errors"
 	"fmt"
 	"midi_manipulator/pkg/backlight"
 	"midi_manipulator/pkg/config"
 	"midi_manipulator/pkg/model"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -133,12 +135,18 @@ func (md *MidiDevice) connectDevice() error {
 }
 
 func (md *MidiDevice) connectOutPort() error {
-	port, err := midi.FindOutPort(md.name)
-	if err != nil {
-		return err
+	portNum := -1
+	for _, inPort := range midi.GetOutPorts() {
+		md.logger.Debug("Found out midi port", zap.String("name", inPort.String()), zap.Int("num", inPort.Number()))
+		if strings.Contains(inPort.String(), md.name) || strings.Contains(md.name, inPort.String()) {
+			portNum = inPort.Number()
+			break
+		}
 	}
-
-	port, err = midi.OutPort(port.Number())
+	if portNum == -1 {
+		return errors.New("not found midi out port")
+	}
+	port, err := midi.OutPort(portNum)
 	if err != nil {
 		return err
 	}
@@ -148,12 +156,18 @@ func (md *MidiDevice) connectOutPort() error {
 }
 
 func (md *MidiDevice) connectInPort() error {
-	port, err := midi.FindInPort(md.name)
-	if err != nil {
-		return err
+	portNum := -1
+	for _, inPort := range midi.GetInPorts() {
+		md.logger.Debug("Found in midi port", zap.String("name", inPort.String()), zap.Int("num", inPort.Number()))
+		if strings.Contains(inPort.String(), md.name) || strings.Contains(md.name, inPort.String()) {
+			portNum = inPort.Number()
+			break
+		}
 	}
-
-	port, err = midi.InPort(port.Number())
+	if portNum == -1 {
+		return errors.New("not found midi in port")
+	}
+	port, err := midi.InPort(portNum)
 	if err != nil {
 		return err
 	}
