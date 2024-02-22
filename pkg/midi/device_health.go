@@ -7,7 +7,7 @@ import (
 
 func HasDeviceWithName[T drivers.Port](deviceName string, deviceList []T) bool {
 	for _, portName := range deviceList {
-		if strings.HasPrefix(portName.String(), deviceName) {
+		if strings.Contains(portName.String(), deviceName) || strings.Contains(deviceName, portName.String()) {
 			return true
 		}
 	}
