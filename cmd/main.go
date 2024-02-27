@@ -38,7 +38,9 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 
 	app := core.NewContainer(agentConf.System.Logging)
 	logger := app.Logger()
-	deviceManager := midiHermophrodite.NewDeviceManager(logger)
+	checkManager := core.NewCheckManager()
+
+	deviceManager := midiHermophrodite.NewDeviceManager(logger, checkManager)
 	defer deviceManager.Close()
 
 	backlightConfig, err := backlight.InitConfig("configs/backlight_config.yaml")
@@ -122,6 +124,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 				update, _ := configuration.User.(*config.UserConfig)
 				deviceManager.UpdateDevices(update.MidiDevices)
 			}),
+			hubman.WithCheckRegistry(checkManager),
 		),
 	)
 

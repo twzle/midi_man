@@ -17,6 +17,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	deviceDisconnectedCheckLabelFormat = "DEVICE_DISCONNECTED_%s"
+)
+
 type MidiDevice struct {
 	name              string
 	active            bool
@@ -35,6 +39,7 @@ type MidiDevice struct {
 	logger            *zap.Logger
 	conf              config.DeviceConfig
 	reconnectedEvent  chan bool
+	checkManager      core.CheckRegistry
 }
 
 type MidiPorts struct {
@@ -107,17 +112,42 @@ func (md *MidiDevice) reconnect(backlightConfig *backlight.DecodedDeviceBackligh
 				if !connected {
 					md.logger.Warn("Device disconnected")
 					md.reconnectedEvent <- connected
+
+					check := core.NewCheck(
+						fmt.Sprintf(deviceDisconnectedCheckLabelFormat, md.name),
+						"device was disconnected",
+					)
+					md.checkManager.RegisterFail(check)
 				}
 			} else {
 				if connected {
 					err := md.initConnection(backlightConfig)
 					if err != nil {
 						md.logger.Warn("Unable to connect device", zap.Error(err))
+
+						connCheck := core.NewCheck(
+							fmt.Sprintf(deviceDisconnectedCheckLabelFormat, md.name),
+							err.Error(),
+						)
+						md.checkManager.RegisterFail(connCheck)
 					} else {
 						md.reconnectedEvent <- connected
+
+						connCheck := core.NewCheck(
+							fmt.Sprintf(deviceDisconnectedCheckLabelFormat, md.name),
+							"",
+						)
+						md.checkManager.RegisterSuccess(connCheck)
 					}
 				} else {
-					md.logger.Debug("No hardware connection to device")
+					msg := "No hardware connection to device"
+					md.logger.Debug(msg)
+
+					hardwareCheck := core.NewCheck(
+						fmt.Sprintf(deviceDisconnectedCheckLabelFormat, md.name),
+						msg,
+					)
+					md.checkManager.RegisterFail(hardwareCheck)
 				}
 			}
 		}
@@ -182,6 +212,7 @@ func (md *MidiDevice) applyConfiguration(
 	deviceConfig config.DeviceConfig,
 	signals chan<- core.Signal,
 	logger *zap.Logger,
+	checkManager core.CheckRegistry,
 ) {
 	md.conf = deviceConfig
 	md.name = deviceConfig.DeviceName
@@ -196,6 +227,7 @@ func (md *MidiDevice) applyConfiguration(
 	md.namespace = deviceConfig.Namespace
 	md.signals = signals
 	md.logger = logger.With(zap.String("alias", md.name))
+	md.checkManager = checkManager
 	md.applyControls(deviceConfig.Controls)
 }
 
@@ -214,9 +246,14 @@ func (md *MidiDevice) applyControls(controls config.Controls) {
 	}
 }
 
-func NewDevice(deviceConfig config.DeviceConfig, signals chan<- core.Signal, logger *zap.Logger) *MidiDevice {
+func NewDevice(
+	deviceConfig config.DeviceConfig,
+	signals chan<- core.Signal,
+	logger *zap.Logger,
+	checkManager core.CheckRegistry,
+) *MidiDevice {
 	midiDevice := MidiDevice{}
-	midiDevice.applyConfiguration(deviceConfig, signals, logger)
+	midiDevice.applyConfiguration(deviceConfig, signals, logger, checkManager)
 
 	return &midiDevice
 }
