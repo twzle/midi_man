@@ -17,6 +17,7 @@ type DeviceManager struct {
 	signals         chan core.Signal
 	backlightConfig *backlight.DecodedDeviceBacklightConfig
 	logger          *zap.Logger
+	checkManager    core.CheckRegistry
 }
 
 func (dm *DeviceManager) SetBacklightConfig(cfg *backlight.DecodedDeviceBacklightConfig) {
@@ -66,6 +67,7 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.DeviceConfig) {
 	defer dm.mutex.Unlock()
 
 	dm.logger.Info("Updating devices", zap.Int("deviceCount", len(midiConfig)), zap.Any("devices", midiConfig))
+	dm.checkManager.Clear()
 
 	for _, device := range dm.devices {
 		device.Stop()
@@ -73,7 +75,7 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.DeviceConfig) {
 
 	dm.devices = make(map[string]*MidiDevice)
 	for _, deviceConfig := range midiConfig {
-		newDevice := NewDevice(deviceConfig, dm.signals, dm.logger)
+		newDevice := NewDevice(deviceConfig, dm.signals, dm.logger, dm.checkManager)
 		dm.devices[newDevice.name] = newDevice
 		newDevice.RunDevice(dm.backlightConfig)
 	}
@@ -83,8 +85,11 @@ func (dm *DeviceManager) GetSignals() chan core.Signal {
 	return dm.signals
 }
 
-func NewDeviceManager(logger *zap.Logger) *DeviceManager {
-	dm := DeviceManager{logger: logger}
+func NewDeviceManager(
+	logger *zap.Logger,
+	checkManager core.CheckRegistry,
+) *DeviceManager {
+	dm := DeviceManager{logger: logger, checkManager: checkManager}
 	dm.devices = make(map[string]*MidiDevice)
 	dm.signals = make(chan core.Signal)
 
