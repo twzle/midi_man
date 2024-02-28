@@ -34,7 +34,7 @@ type MidiDevice struct {
 	stopListen        chan struct{}
 	namespace         string
 	connected         atomic.Bool
-	controls          map[byte]*Control
+	controls          map[int]*Control
 	signals           chan<- core.Signal
 	logger            *zap.Logger
 	conf              config.DeviceConfig
@@ -92,7 +92,7 @@ func (md *MidiDevice) initConnection(backlightConfig *backlight.DecodedDeviceBac
 	if err := md.connectDevice(); err != nil {
 		return err
 	}
-	md.startupIllumination(backlightConfig)
+	go md.startupIllumination(backlightConfig)
 	md.clickBuffer = make(map[uint8]*KeyContext)
 	md.applyControls(md.conf.Controls)
 	return nil
@@ -231,18 +231,20 @@ func (md *MidiDevice) applyConfiguration(
 	md.applyControls(deviceConfig.Controls)
 }
 
-func (md *MidiDevice) applyControls(controls config.Controls) {
-	md.controls = make(map[byte]*Control)
-	for _, controlKey := range controls.Keys {
-		control := Control{
-			Key:              controlKey,
-			Rotate:           controls.Rotate,
-			ValueRange:       controls.ValueRange,
-			InitialValue:     controls.InitialValue,
-			DecrementTrigger: controls.Triggers.Decrement,
-			IncrementTrigger: controls.Triggers.Increment,
+func (md *MidiDevice) applyControls(controlsList []config.Controls) {
+	md.controls = make(map[int]*Control)
+	for _, controls := range controlsList {
+		for _, controlKey := range controls.Keys {
+			control := Control{
+				Key:              controlKey,
+				Rotate:           controls.Rotate,
+				ValueRange:       controls.ValueRange,
+				InitialValue:     controls.InitialValue,
+				DecrementTrigger: controls.Triggers.Decrement,
+				IncrementTrigger: controls.Triggers.Increment,
+			}
+			md.controls[controlKey] = &control
 		}
-		md.controls[controlKey] = &control
 	}
 }
 
