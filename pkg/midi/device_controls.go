@@ -2,15 +2,15 @@ package midi
 
 
 type Control struct {
-	Key              byte
+	Key              int
 	Rotate           bool
-	ValueRange       [2]byte
-	InitialValue     byte
-	IncrementTrigger byte
-	DecrementTrigger byte
+	ValueRange       [2]int
+	InitialValue     int
+	IncrementTrigger int
+	DecrementTrigger int
 }
 
-func (md *MidiDevice) handleControls(controlKey byte, controlVelocity byte) (byte, bool) {
+func (md *MidiDevice) handleControls(controlKey int, controlVelocity int) (int, bool) {
 	control, ok := md.controls[controlKey]
 	if ok && !control.Rotate {
 		if control.IncrementTrigger == controlVelocity && control.InitialValue < control.ValueRange[1]{

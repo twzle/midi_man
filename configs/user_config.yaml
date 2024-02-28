@@ -1,15 +1,30 @@
 midi_devices:
   - device_name: MPD226
-    startup_delay: 1000
+    startup_delay: 100
     reconnect_interval: 2000
     active: true
     hold_delta: 1000
     namespace: default
     accumulate_controls:
-      keys: [16, 17, 18, 19, 118]
-      rotate: false
-      value_range: [0, 127]
-      initial_value: 0
-      triggers:
+      - keys:
+          - 16
+          - 17
+        rotate: false
+        value_range:
+          - 0
+          - 127
+        initial_value: 0
+        triggers: null
         increment: 127
         decrement: 1
+      - keys:
+          - 18
+          - 19
+        rotate: false
+        value_range:
+          - 63
+          - 127
+        initial_value: 0
+        triggers: null
+        increment: 1
+        decrement: 127
