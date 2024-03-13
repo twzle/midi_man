@@ -77,7 +77,7 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.DeviceConfig) {
 	for _, deviceConfig := range midiConfig {
 		newDevice := NewDevice(deviceConfig, dm.signals, dm.logger, dm.checkManager)
 		dm.devices[newDevice.name] = newDevice
-		newDevice.RunDevice(dm.backlightConfig)
+		go newDevice.RunDevice(dm.backlightConfig)
 	}
 }
 
