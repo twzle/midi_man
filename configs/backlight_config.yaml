@@ -330,7 +330,7 @@ device_light_configuration:
             type: ControlChange
             fallback_color: channel
             bytes: B0 %key %payload
-  - device_name: Arduino
+  - device_name: Arduino_1_2
     backlight_time_offset: 100
     color_spaces:
       - color_space_id: 1
