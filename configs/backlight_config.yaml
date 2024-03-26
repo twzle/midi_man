@@ -355,7 +355,7 @@ device_light_configuration:
             type: NoteOff
             fallback_color: black
             bytes: 80 %key %payload
-  - device_name: Arduino_1_2
+  - device_name: Arduino
     backlight_time_offset: 100
     color_spaces:
       - color_space_id: 1
@@ -365,7 +365,7 @@ device_light_configuration:
         off:
           - color_name: black
             payload: '00'
-        keyboard_backlight:
+    keyboard_backlight:
       - key_range:
           - 0
           - 15
