@@ -11,7 +11,7 @@ import (
 func (md *MidiDevice) sendSignals(signals []core.Signal) {
 	for _, signal := range signals {
 		if signal != nil {
-			md.logger.Debug("Received signal from MIDI device", zap.String("signal", string(signal.Code())), zap.Any("payload", signal))
+			md.logger.Debug("Received signal from MIDI device", zap.String("signal", signal.Code()), zap.Any("payload", signal))
 			md.signals <- signal
 		}
 	}
@@ -127,7 +127,7 @@ func (md *MidiDevice) listen() {
 				continue
 			}
 			var err error
-			stopMidiListener, err = midi.ListenTo(*md.ports.in, md.getMidiMessage, midi.UseSysEx())
+			stopMidiListener, err = midi.ListenTo(md.ports.in, md.getMidiMessage, midi.UseSysEx())
 			if err != nil {
 				md.logger.Warn("error in init listen", zap.Error(err))
 			}

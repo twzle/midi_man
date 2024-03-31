@@ -87,3 +87,31 @@ func (s SetActiveNamespaceCommand) Code() string {
 func (s SetActiveNamespaceCommand) Description() string {
 	return `Sets given namespace as active on given device, all signals will be received from will contain active namespace attribute`
 }
+
+type StartBlinkingCommand struct {
+	KeyCode      int    `hubman:"key_code"`
+	DeviceAlias  string `hubman:"device_alias"`
+	OnColorName  string `hubman:"on_color_name"`
+	OffColorName string `hubman:"off_color_name"`
+}
+
+func (s StartBlinkingCommand) Code() string {
+	return "StartBlinkingCommand"
+}
+
+func (s StartBlinkingCommand) Description() string {
+	return "Make the key repeatedly blink with chosen color"
+}
+
+type StopBlinkingCommand struct {
+	KeyCode     int    `hubman:"key_code"`
+	DeviceAlias string `hubman:"device_alias"`
+}
+
+func (s StopBlinkingCommand) Code() string {
+	return "StopBlinkingCommand"
+}
+
+func (s StopBlinkingCommand) Description() string {
+	return "Make the key stop blinking if it blinks"
+}

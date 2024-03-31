@@ -9,7 +9,7 @@ type StatusName string
 
 const (
 	On  StatusName = "on"
-	Off            = "off"
+	Off StatusName = "off"
 )
 
 type DecodedValues struct {

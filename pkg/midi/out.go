@@ -9,14 +9,14 @@ import (
 func (md *MidiDevice) turnLightOn(cmd model.TurnLightOnCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	msg, _ := backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.On)
 	if msg != nil && md.ports.out != nil {
-		(*md.ports.out).Send(msg)
+		md.ports.out.Send(msg)
 	}
 }
 
 func (md *MidiDevice) turnLightOff(cmd model.TurnLightOffCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	msg, _ := backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.Off)
 	if msg != nil && md.ports.out != nil {
-		(*md.ports.out).Send(msg)
+		md.ports.out.Send(msg)
 	}
 }
 
@@ -24,12 +24,12 @@ func (md *MidiDevice) singleBlink(cmd model.SingleBlinkCommand, backlightConfig 
 	backlightTimeOffset := time.Duration(backlightConfig.DeviceBacklightTimeOffset[md.name])
 	msg, _ := backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.On)
 	if msg != nil && md.ports.out != nil {
-		(*md.ports.out).Send(msg)
+		md.ports.out.Send(msg)
 	}
 	time.Sleep(time.Millisecond * backlightTimeOffset)
 	msg, _ = backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.Off)
 	if msg != nil && md.ports.out != nil {
-		(*md.ports.out).Send(msg)
+		md.ports.out.Send(msg)
 	}
 }
 
@@ -40,12 +40,12 @@ func (md *MidiDevice) singleReversedBlink(
 	backlightTimeOffset := time.Duration(backlightConfig.DeviceBacklightTimeOffset[md.name])
 	msg, _ := backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.Off)
 	if msg != nil && md.ports.out != nil {
-		(*md.ports.out).Send(msg)
+		md.ports.out.Send(msg)
 	}
 	time.Sleep(time.Millisecond * backlightTimeOffset)
 	msg, _ = backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.On)
 	if msg != nil && md.ports.out != nil {
-		(*md.ports.out).Send(msg)
+		md.ports.out.Send(msg)
 	}
 }
 
@@ -71,7 +71,7 @@ func (md *MidiDevice) turnLightKeyRange(
 		}
 
 		time.Sleep(time.Millisecond * backlightTimeOffset)
-		(*md.ports.out).Send(sequence)
+		md.ports.out.Send(sequence)
 	}
 }
 
