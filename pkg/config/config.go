@@ -28,6 +28,7 @@ type DeviceConfig struct {
 	HoldDelta         int        `json:"hold_delta" yaml:"hold_delta"`
 	Namespace         string     `json:"namespace" yaml:"namespace"`
 	Controls          []Controls `json:"accumulate_controls" yaml:"accumulate_controls"`
+	BlinkingPeriodMS  int        `json:"blinking_period_ms" yaml:"blinking_period_ms"`
 }
 
 type UserConfig struct {
@@ -73,6 +74,14 @@ func (conf *UserConfig) Validate() error {
 				idx,
 				device.DeviceName,
 				MinReconnectIntervalMs,
+				device.ReconnectInterval,
+			)
+		}
+		if device.BlinkingPeriodMS < 0 {
+			return fmt.Errorf(
+				"device #{%d} ({%s}): blinking_period_in_milliseconds must be >= 0ms. Now {%d} is provided",
+				idx,
+				device.DeviceName,
 				device.ReconnectInterval,
 			)
 		}

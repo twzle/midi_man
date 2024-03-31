@@ -71,7 +71,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							logger.Info("Can't execute command", zap.Error(err))
+							logger.Error("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.TurnLightOffCommand{},
@@ -80,7 +80,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							logger.Info("Can't execute command", zap.Error(err))
+							logger.Error("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.SingleBlinkCommand{},
@@ -89,7 +89,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							logger.Info("Can't execute command", zap.Error(err))
+							logger.Error("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.SingleReversedBlinkCommand{},
@@ -98,7 +98,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							logger.Info("Can't execute command", zap.Error(err))
+							logger.Error("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.ContinuousBlinkCommand{},
@@ -107,7 +107,7 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							logger.Info("Can't execute command", zap.Error(err))
+							logger.Error("Can't execute command", zap.Error(err))
 						}
 					}),
 				hubman.WithCommand(model.SetActiveNamespaceCommand{},
@@ -116,9 +116,25 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 						parser(&cmd)
 						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 						if err != nil {
-							logger.Info("Can't execute command", zap.Error(err))
+							logger.Error("Can't execute command", zap.Error(err))
 						}
 					}),
+				hubman.WithCommand(model.StartBlinkingCommand{}, func(s core.SerializedCommand, parser executor.CommandParser) {
+					var cmd model.StartBlinkingCommand
+					parser(&cmd)
+					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+					if err != nil {
+						logger.Error("Can't execute command", zap.Error(err))
+					}
+				}),
+				hubman.WithCommand(model.StopBlinkingCommand{}, func(s core.SerializedCommand, parser executor.CommandParser) {
+					var cmd model.StopBlinkingCommand
+					parser(&cmd)
+					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
+					if err != nil {
+						logger.Error("Can't execute command", zap.Error(err))
+					}
+				}),
 			),
 			hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
 				update, _ := configuration.User.(*config.UserConfig)

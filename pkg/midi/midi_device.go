@@ -22,29 +22,39 @@ const (
 )
 
 type MidiDevice struct {
-	name              string
-	active            bool
-	ports             MidiPorts
-	clickBuffer       ClickBuffer
-	holdDelta         time.Duration
-	startupDelay      time.Duration
-	reconnectInterval time.Duration
-	mutex             sync.Mutex
-	stopReconnect     chan struct{}
-	stopListen        chan struct{}
-	namespace         string
-	connected         atomic.Bool
-	controls          map[int]*Control
-	signals           chan<- core.Signal
-	logger            *zap.Logger
-	conf              config.DeviceConfig
-	reconnectedEvent  chan bool
-	checkManager      core.CheckRegistry
+	name               string
+	active             bool
+	ports              MidiPorts
+	clickBuffer        ClickBuffer
+	holdDelta          time.Duration
+	startupDelay       time.Duration
+	reconnectInterval  time.Duration
+	mutex              sync.Mutex
+	stopReconnect      chan struct{}
+	stopListen         chan struct{}
+	stopBlinking       chan struct{}
+	namespace          string
+	connected          atomic.Bool
+	controls           map[int]*Control
+	signals            chan<- core.Signal
+	logger             *zap.Logger
+	conf               config.DeviceConfig
+	reconnectedEvent   chan bool
+	checkManager       core.CheckRegistry
+	blinkingKeys       map[int]blinkingKey
+	blinkingQueueMutex sync.Mutex
+}
+
+type blinkingKey struct {
+	keyCode         int
+	OnColorName     string
+	OffColorName    string
+	backlightConfig *backlight.DecodedDeviceBacklightConfig
 }
 
 type MidiPorts struct {
-	in  *drivers.In
-	out *drivers.Out
+	in  drivers.In
+	out drivers.Out
 }
 
 func (md *MidiDevice) GetAlias() string {
@@ -55,19 +65,32 @@ func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig 
 	md.mutex.Lock()
 	defer md.mutex.Unlock()
 
-	switch v := command.(type) {
+	switch cmd := command.(type) {
 	case model.TurnLightOnCommand:
-		md.turnLightOn(command.(model.TurnLightOnCommand), backlightConfig)
+		md.turnLightOn(cmd, backlightConfig)
 	case model.TurnLightOffCommand:
-		md.turnLightOff(command.(model.TurnLightOffCommand), backlightConfig)
+		md.turnLightOff(cmd, backlightConfig)
 	case model.SingleBlinkCommand:
-		md.singleBlink(command.(model.SingleBlinkCommand), backlightConfig)
+		md.singleBlink(cmd, backlightConfig)
 	case model.SingleReversedBlinkCommand:
-		md.singleReversedBlink(command.(model.SingleReversedBlinkCommand), backlightConfig)
+		md.singleReversedBlink(cmd, backlightConfig)
 	case model.SetActiveNamespaceCommand:
-		md.setActiveNamespace(command.(model.SetActiveNamespaceCommand), backlightConfig)
+		md.setActiveNamespace(cmd, backlightConfig)
+	case model.StartBlinkingCommand:
+		md.blinkingQueueMutex.Lock()
+		md.blinkingKeys[cmd.KeyCode] = blinkingKey{
+			keyCode:         cmd.KeyCode,
+			OnColorName:     cmd.OnColorName,
+			OffColorName:    cmd.OffColorName,
+			backlightConfig: backlightConfig,
+		}
+		md.blinkingQueueMutex.Unlock()
+	case model.StopBlinkingCommand:
+		md.blinkingQueueMutex.Lock()
+		delete(md.blinkingKeys, cmd.KeyCode)
+		md.blinkingQueueMutex.Unlock()
 	default:
-		md.logger.Warn("Unknown command", zap.Any("command", v))
+		md.logger.Warn("Unknown command", zap.Any("command", cmd))
 	}
 	return nil
 }
@@ -77,12 +100,15 @@ func (md *MidiDevice) Stop() {
 	close(md.stopListen)
 	md.stopReconnect <- struct{}{}
 	close(md.stopReconnect)
+	md.stopBlinking <- struct{}{}
+	close(md.stopBlinking)
 }
 
 func (md *MidiDevice) RunDevice(backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	time.Sleep(md.startupDelay)
 	go md.reconnect(backlightConfig)
 	go md.listen()
+	go md.blinking()
 }
 
 func (md *MidiDevice) initConnection(backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
@@ -182,7 +208,7 @@ func (md *MidiDevice) connectOutPort() error {
 		return err
 	}
 
-	md.ports.out = &port
+	md.ports.out = port
 	return nil
 }
 
@@ -204,7 +230,7 @@ func (md *MidiDevice) connectInPort() error {
 		return err
 	}
 
-	md.ports.in = &port
+	md.ports.in = port
 	return nil
 }
 
@@ -223,7 +249,9 @@ func (md *MidiDevice) applyConfiguration(
 	md.clickBuffer = make(map[uint8]*KeyContext)
 	md.stopListen = make(chan struct{})
 	md.stopReconnect = make(chan struct{})
+	md.stopBlinking = make(chan struct{})
 	md.reconnectedEvent = make(chan bool)
+	md.blinkingKeys = make(map[int]blinkingKey)
 	md.namespace = deviceConfig.Namespace
 	md.signals = signals
 	md.logger = logger.With(zap.String("alias", md.name))
@@ -267,4 +295,37 @@ func (md *MidiDevice) sendNamespaceChangedSignal(signals chan<- core.Signal, old
 		NewNamespace: newNamespace,
 	}
 	signals <- signal
+}
+
+func (md *MidiDevice) blinking() {
+	period := time.Duration(md.conf.BlinkingPeriodMS) * time.Millisecond
+	if period == 0 {
+		period = 1 * time.Second
+	}
+	ticker := time.NewTicker(period)
+	isOn := true
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			md.blinkingQueueMutex.Lock()
+			for _, b := range md.blinkingKeys {
+				color := b.OffColorName
+				if isOn {
+					color = b.OnColorName
+				}
+				md.turnLightOn(
+					model.TurnLightOnCommand{
+						KeyCode:     b.keyCode,
+						ColorName:   color,
+						DeviceAlias: md.name,
+					}, b.backlightConfig,
+				)
+			}
+			isOn = !isOn
+			md.blinkingQueueMutex.Unlock()
+		case <-md.stopBlinking:
+			return
+		}
+	}
 }
