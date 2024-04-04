@@ -2,6 +2,8 @@ git.miem.hse.ru/hubman/hubman-lib v1.0.7 h1:ZbBxg7XMnbxoDh9qmzdRRCxYMg5o9PXHBtXf
 git.miem.hse.ru/hubman/hubman-lib v1.0.7/go.mod h1:iJtWAg8W+Mkp8oQHFzL0bezGaQfB2bODbghy1/cIQhI=
 git.miem.hse.ru/hubman/hubman-lib v1.0.8 h1:ewwH4X9/rReYFqLonqdlx+qw723dm4W2UDsWJzAZ64U=
 git.miem.hse.ru/hubman/hubman-lib v1.0.8/go.mod h1:iJtWAg8W+Mkp8oQHFzL0bezGaQfB2bODbghy1/cIQhI=
+git.miem.hse.ru/hubman/hubman-lib v1.0.9 h1:VN73nvvhJ+SjRtuzstwGW8u/ddfPAyFqCZCn2FkjiS4=
+git.miem.hse.ru/hubman/hubman-lib v1.0.9/go.mod h1:iJtWAg8W+Mkp8oQHFzL0bezGaQfB2bODbghy1/cIQhI=
 github.com/RaveNoX/go-jsoncommentstrip v1.0.0/go.mod h1:78ihd09MekBnJnxpICcwzCMzGrKSKYe4AqU6PDYYpjk=
 github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a h1:HbKu58rmZpUGpz5+4FfNmIU+FmZg2P3Xaj2v2bfNWmk=
 github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a/go.mod h1:SGnFV6hVsYE877CKEZ6tDNTjaSXYUk6QqoIK6PrAtcc=
