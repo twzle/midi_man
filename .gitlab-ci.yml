@@ -1,5 +1,5 @@
 variables:
-  MAIN_PACKAGE: cmd/main.go
+  MAIN_PACKAGE: cmd/manipulator/main.go
 include:
   - project: 'hubman/ops-man'
     file: /ci/flows/agent.yml
