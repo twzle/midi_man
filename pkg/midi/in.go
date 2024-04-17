@@ -1,11 +1,12 @@
 package midi
 
 import (
+	"midi_manipulator/pkg/model"
+	"time"
+
 	"git.miem.hse.ru/hubman/hubman-lib/core"
 	"gitlab.com/gomidi/midi/v2"
 	"go.uber.org/zap"
-	"midi_manipulator/pkg/model"
-	"time"
 )
 
 func (md *MidiDevice) sendSignals(signals []core.Signal) {
@@ -17,10 +18,8 @@ func (md *MidiDevice) sendSignals(signals []core.Signal) {
 	}
 }
 
-func (md *MidiDevice) getMidiMessage(msg midi.Message, _ int32) {
+func (md *MidiDevice) processMidiMessage(msg midi.Message, _ int32) {
 	md.mutex.Lock()
-	defer md.mutex.Unlock()
-
 	var channel, key, velocity uint8
 	switch {
 	case msg.GetNoteOn(&channel, &key, &velocity):
@@ -48,6 +47,9 @@ func (md *MidiDevice) getMidiMessage(msg midi.Message, _ int32) {
 			md.clickBuffer.SetKeyContext(key, kctx)
 		}
 	}
+	md.mutex.Unlock()
+
+	md.sendSignals(md.messageToSignal())
 }
 
 func (md *MidiDevice) messageToSignal() []core.Signal {
@@ -68,7 +70,7 @@ func (md *MidiDevice) messageToSignal() []core.Signal {
 			// UPDATE KEY STATUS IN BUFFER
 			kctx.status = signal
 		case model.NotePushed:
-			if time.Now().Sub(kctx.usedAt) >= md.holdDelta {
+			if time.Since(kctx.usedAt) >= md.holdDelta {
 				signal := model.NoteHold{
 					Device:    md.name,
 					KeyCode:   int(kctx.key),
@@ -127,13 +129,9 @@ func (md *MidiDevice) listen() {
 				continue
 			}
 			var err error
-			stopMidiListener, err = midi.ListenTo(md.ports.in, md.getMidiMessage, midi.UseSysEx())
+			stopMidiListener, err = midi.ListenTo(md.ports.in, md.processMidiMessage, midi.UseSysEx())
 			if err != nil {
 				md.logger.Warn("error in init listen", zap.Error(err))
-			}
-		default:
-			if md.connected.Load() {
-				md.sendSignals(md.messageToSignal())
 			}
 		}
 	}
