@@ -96,11 +96,8 @@ func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig 
 }
 
 func (md *MidiDevice) Stop() {
-	md.stopListen <- struct{}{}
 	close(md.stopListen)
-	md.stopReconnect <- struct{}{}
 	close(md.stopReconnect)
-	md.stopBlinking <- struct{}{}
 	close(md.stopBlinking)
 }
 
