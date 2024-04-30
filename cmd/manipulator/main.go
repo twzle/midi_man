@@ -66,74 +66,50 @@ func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 			),
 			hubman.WithExecutor(
 				hubman.WithCommand(model.TurnLightOnCommand{},
-					func(command core.SerializedCommand, parser executor.CommandParser) {
+					func(command core.SerializedCommand, parser executor.CommandParser) error {
 						var cmd model.TurnLightOnCommand
 						parser(&cmd)
-						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-						if err != nil {
-							logger.Error("Can't execute command", zap.Error(err))
-						}
+						return deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					}),
 				hubman.WithCommand(model.TurnLightOffCommand{},
-					func(command core.SerializedCommand, parser executor.CommandParser) {
+					func(command core.SerializedCommand, parser executor.CommandParser) error {
 						var cmd model.TurnLightOffCommand
 						parser(&cmd)
-						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-						if err != nil {
-							logger.Error("Can't execute command", zap.Error(err))
-						}
+						return deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					}),
 				hubman.WithCommand(model.SingleBlinkCommand{},
-					func(command core.SerializedCommand, parser executor.CommandParser) {
+					func(command core.SerializedCommand, parser executor.CommandParser) error {
 						var cmd model.SingleBlinkCommand
 						parser(&cmd)
-						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-						if err != nil {
-							logger.Error("Can't execute command", zap.Error(err))
-						}
+						return deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					}),
 				hubman.WithCommand(model.SingleReversedBlinkCommand{},
-					func(command core.SerializedCommand, parser executor.CommandParser) {
+					func(command core.SerializedCommand, parser executor.CommandParser) error {
 						var cmd model.SingleReversedBlinkCommand
 						parser(&cmd)
-						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-						if err != nil {
-							logger.Error("Can't execute command", zap.Error(err))
-						}
+						return deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					}),
 				hubman.WithCommand(model.ContinuousBlinkCommand{},
-					func(command core.SerializedCommand, parser executor.CommandParser) {
+					func(command core.SerializedCommand, parser executor.CommandParser) error {
 						var cmd model.ContinuousBlinkCommand
 						parser(&cmd)
-						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-						if err != nil {
-							logger.Error("Can't execute command", zap.Error(err))
-						}
+						return deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					}),
 				hubman.WithCommand(model.SetActiveNamespaceCommand{},
-					func(s core.SerializedCommand, parser executor.CommandParser) {
+					func(s core.SerializedCommand, parser executor.CommandParser) error {
 						var cmd model.SetActiveNamespaceCommand
 						parser(&cmd)
-						err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-						if err != nil {
-							logger.Error("Can't execute command", zap.Error(err))
-						}
+						return deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 					}),
-				hubman.WithCommand(model.StartBlinkingCommand{}, func(s core.SerializedCommand, parser executor.CommandParser) {
+				hubman.WithCommand(model.StartBlinkingCommand{}, func(s core.SerializedCommand, parser executor.CommandParser) error {
 					var cmd model.StartBlinkingCommand
 					parser(&cmd)
-					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-					if err != nil {
-						logger.Error("Can't execute command", zap.Error(err))
-					}
+					return deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 				}),
-				hubman.WithCommand(model.StopBlinkingCommand{}, func(s core.SerializedCommand, parser executor.CommandParser) {
+				hubman.WithCommand(model.StopBlinkingCommand{}, func(s core.SerializedCommand, parser executor.CommandParser) error {
 					var cmd model.StopBlinkingCommand
 					parser(&cmd)
-					err := deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
-					if err != nil {
-						logger.Error("Can't execute command", zap.Error(err))
-					}
+					return deviceManager.ExecuteOnDevice(cmd.DeviceAlias, cmd)
 				}),
 			),
 			hubman.WithOnConfigRefresh(func(configuration core.AgentConfiguration) {
