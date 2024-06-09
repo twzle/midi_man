@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Representation of key context entity
 type KeyContext struct {
 	key      uint8
 	velocity uint8

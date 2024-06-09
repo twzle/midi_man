@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// Function checks the performance of backlight configuration initialization
 func BenchmarkTurnLight(b *testing.B) {
 	decodedBacklightConfig, err := InitConfig("../../configs/backlight_config.yaml")
 	if err != nil {

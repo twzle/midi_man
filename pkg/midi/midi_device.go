@@ -21,6 +21,7 @@ const (
 	deviceDisconnectedCheckLabelFormat = "DEVICE_DISCONNECTED_%s"
 )
 
+// Representation of MIDI-device entity
 type MidiDevice struct {
 	name               string
 	active             bool
@@ -45,6 +46,7 @@ type MidiDevice struct {
 	blinkingQueueMutex sync.Mutex
 }
 
+// Representation of blinking key entity
 type blinkingKey struct {
 	keyCode         int
 	OnColorName     string
@@ -52,15 +54,18 @@ type blinkingKey struct {
 	backlightConfig *backlight.DecodedDeviceBacklightConfig
 }
 
+// Representation of MIDI-ports entity
 type MidiPorts struct {
 	in  drivers.In
 	out drivers.Out
 }
 
+// Function returns alias of MIDI-device
 func (md *MidiDevice) GetAlias() string {
 	return md.name
 }
 
+// Function executes command on MIDI-device
 func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
 	md.mutex.Lock()
 	defer md.mutex.Unlock()
@@ -95,12 +100,14 @@ func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig 
 	return nil
 }
 
+// Function frees resources of current MIDI-device
 func (md *MidiDevice) Stop() {
 	close(md.stopListen)
 	close(md.stopReconnect)
 	close(md.stopBlinking)
 }
 
+// Function initialized working process for MIDI-device
 func (md *MidiDevice) RunDevice(backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	time.Sleep(md.startupDelay)
 	go md.reconnect(backlightConfig)
@@ -108,6 +115,7 @@ func (md *MidiDevice) RunDevice(backlightConfig *backlight.DecodedDeviceBackligh
 	go md.blinking()
 }
 
+// Function initializes connection with MIDI-device connected through system
 func (md *MidiDevice) initConnection(backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
 	md.mutex.Lock()
 	defer md.mutex.Unlock()
@@ -121,6 +129,7 @@ func (md *MidiDevice) initConnection(backlightConfig *backlight.DecodedDeviceBac
 	return nil
 }
 
+// Function contains logic of reconnect to MIDI-device through system with specified time interval
 func (md *MidiDevice) reconnect(backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	ticker := time.NewTicker(md.reconnectInterval)
 	for {
@@ -177,6 +186,7 @@ func (md *MidiDevice) reconnect(backlightConfig *backlight.DecodedDeviceBackligh
 	}
 }
 
+// Function contains logic of connection to IN and OUT ports of MIDI-device through system
 func (md *MidiDevice) connectDevice() error {
 	if inErr := md.connectInPort(); inErr != nil {
 		return fmt.Errorf("connection of device failed, inPort:\"{%w}\"", inErr)
@@ -187,6 +197,7 @@ func (md *MidiDevice) connectDevice() error {
 	return nil
 }
 
+// Function contains logic of connection to OUT port of MIDI-device through system
 func (md *MidiDevice) connectOutPort() error {
 	portNum := -1
 	for _, inPort := range midi.GetOutPorts() {
@@ -209,6 +220,7 @@ func (md *MidiDevice) connectOutPort() error {
 	return nil
 }
 
+// Function contains logic of connection to IN port of MIDI-device through system
 func (md *MidiDevice) connectInPort() error {
 	portNum := -1
 	for _, inPort := range midi.GetInPorts() {
@@ -231,6 +243,8 @@ func (md *MidiDevice) connectInPort() error {
 	return nil
 }
 
+
+// Function apllying configurtaion to MIDI-device entity
 func (md *MidiDevice) applyConfiguration(
 	deviceConfig config.DeviceConfig,
 	signals chan<- core.Signal,
@@ -256,6 +270,8 @@ func (md *MidiDevice) applyConfiguration(
 	md.applyControls(deviceConfig.Controls)
 }
 
+
+// Function applies configuration of controls to MIDI-device entity
 func (md *MidiDevice) applyControls(controlsList []config.Controls) {
 	md.controls = make(map[int]*Control)
 	for _, controls := range controlsList {
@@ -273,6 +289,7 @@ func (md *MidiDevice) applyControls(controlsList []config.Controls) {
 	}
 }
 
+// Function initializes midi device entity with values
 func NewDevice(
 	deviceConfig config.DeviceConfig,
 	signals chan<- core.Signal,
@@ -285,6 +302,7 @@ func NewDevice(
 	return &midiDevice
 }
 
+// Function sends callback signals after namespace is changed
 func (md *MidiDevice) sendNamespaceChangedSignal(signals chan<- core.Signal, oldNamespace string, newNamespace string) {
 	signal := model.NamespaceChanged{
 		Device:       md.name,
@@ -294,6 +312,7 @@ func (md *MidiDevice) sendNamespaceChangedSignal(signals chan<- core.Signal, old
 	signals <- signal
 }
 
+// Function contains logic of continuous blinking for single component of MIDI-device
 func (md *MidiDevice) blinking() {
 	period := time.Duration(md.conf.BlinkingPeriodMS) * time.Millisecond
 	if period == 0 {

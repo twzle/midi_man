@@ -12,10 +12,12 @@ const (
 	Off StatusName = "off"
 )
 
+// Representation of decoded values
 type DecodedValues struct {
 	payload []byte
 }
 
+// Representation of decoded mapping
 type DecodedMapping struct {
 	payloadIdx     int
 	keyIdx         int
@@ -23,6 +25,7 @@ type DecodedMapping struct {
 	bytes          []byte
 }
 
+// Representation of decoded device backlight configuration
 type DecodedDeviceBacklightConfig struct {
 	ColorSetToValues          map[DecodedColorSetIdentifiers]DecodedValues
 	KeyStatusToMapping        map[DecodedKeyStatusIdentifiers]DecodedMapping
@@ -31,6 +34,7 @@ type DecodedDeviceBacklightConfig struct {
 	DeviceBacklightTimeOffset map[string]int
 }
 
+// Representation of decoded color set identifiers
 type DecodedColorSetIdentifiers struct {
 	DeviceAlias string
 	Status      StatusName
@@ -38,17 +42,20 @@ type DecodedColorSetIdentifiers struct {
 	ColorName   string
 }
 
+// Representation of decoded key status identifiers
 type DecodedKeyStatusIdentifiers struct {
 	DeviceAlias string
 	Key         byte
 	Status      StatusName
 }
 
+// Representation of decoded key backlight identifiers
 type DecodedKeyBacklightIdentifiers struct {
 	deviceAlias string
 	key         byte
 }
 
+// Function decodes payload of given string
 func decodePayload(payload string) []byte {
 	byteString := strings.ReplaceAll(payload, " ", "")
 	bytes, _ := hex.DecodeString(byteString)
@@ -56,6 +63,7 @@ func decodePayload(payload string) []byte {
 	return bytes
 }
 
+// Function finds entry index by anchor in given string
 func findEntryIndex(payload string, token string) int {
 	idx := 0
 
@@ -72,12 +80,14 @@ func findEntryIndex(payload string, token string) int {
 	return idx
 }
 
+// Function replaces anchors with values
 func removeFormatKeysFromString(payload string) string {
 	payload = strings.Replace(payload, "%payload", "00", 1)
 	payload = strings.Replace(payload, "%key", "00", 1)
 	return payload
 }
 
+// Function decodes mapping part of backlight configuration from raw format to optimized
 func decodeMapping(byteString string, keyNumberShift int) DecodedMapping {
 	payloadIdx := findEntryIndex(byteString, "%payload")
 	keyIdx := findEntryIndex(byteString, "%key")
@@ -87,6 +97,7 @@ func decodeMapping(byteString string, keyNumberShift int) DecodedMapping {
 
 }
 
+// Function decodes main part of backlight configuration from raw format to optimized
 func decodeConfig(cfg *RawBacklightConfig) DecodedDeviceBacklightConfig {
 	kbm := make(map[DecodedKeyBacklightIdentifiers]RawKeyBacklight)
 	cstv := make(map[DecodedColorSetIdentifiers]DecodedValues)
@@ -147,6 +158,7 @@ func decodeConfig(cfg *RawBacklightConfig) DecodedDeviceBacklightConfig {
 	return dbct
 }
 
+// Function finds arguments to deserealize backlight configuration
 func (db *DecodedDeviceBacklightConfig) FindArguments(deviceAlias string, key byte, color string, status StatusName) (*DecodedMapping, *DecodedValues) {
 	kbl := DecodedKeyBacklightIdentifiers{deviceAlias, key}
 	kb, _ := db.KeyBacklightMap[kbl]

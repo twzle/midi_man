@@ -11,6 +11,7 @@ import (
 	"sync"
 )
 
+// Representation of device manager entity
 type DeviceManager struct {
 	devices         map[string]*MidiDevice
 	mutex           sync.Mutex
@@ -20,10 +21,12 @@ type DeviceManager struct {
 	checkManager    core.CheckRegistry
 }
 
+// Function sets current backlight configuration for devices
 func (dm *DeviceManager) SetBacklightConfig(cfg *backlight.DecodedDeviceBacklightConfig) {
 	dm.backlightConfig = cfg
 }
 
+// Function returns object representing MIDI-device from current device list
 func (dm *DeviceManager) getDevice(alias string) (*MidiDevice, bool) {
 	dm.mutex.Lock()
 	defer dm.mutex.Unlock()
@@ -31,6 +34,8 @@ func (dm *DeviceManager) getDevice(alias string) (*MidiDevice, bool) {
 	return device, ok
 }
 
+
+// Function frees the resources of device manager with termination of all devices in current device list
 func (dm *DeviceManager) Close() {
 	dm.mutex.Lock()
 	defer dm.mutex.Unlock()
@@ -40,6 +45,7 @@ func (dm *DeviceManager) Close() {
 	}
 }
 
+// Function handles execution of command on device by its alias
 func (dm *DeviceManager) ExecuteOnDevice(alias string, cmd model.MidiCommand) error {
 	device, found := dm.getDevice(alias)
 
@@ -62,6 +68,7 @@ func (dm *DeviceManager) ExecuteOnDevice(alias string, cmd model.MidiCommand) er
 	return nil
 }
 
+// Function handles device list update process
 func (dm *DeviceManager) UpdateDevices(midiConfig []config.DeviceConfig) {
 	dm.mutex.Lock()
 	defer dm.mutex.Unlock()
@@ -81,10 +88,12 @@ func (dm *DeviceManager) UpdateDevices(midiConfig []config.DeviceConfig) {
 	}
 }
 
+// Function returns signal channel of device manager as value
 func (dm *DeviceManager) GetSignals() chan core.Signal {
 	return dm.signals
 }
 
+// Function initializing device manager entity with values
 func NewDeviceManager(
 	logger *zap.Logger,
 	checkManager core.CheckRegistry,

@@ -1,6 +1,6 @@
 package midi
 
-
+// Representation of control entity
 type Control struct {
 	Key              int
 	Rotate           bool
@@ -10,6 +10,7 @@ type Control struct {
 	DecrementTrigger int
 }
 
+// Function handles behaviour of control by id and velocity and returns modified values
 func (md *MidiDevice) handleControls(controlKey int, controlVelocity int) (int, bool) {
 	control, ok := md.controls[controlKey]
 	if ok && !control.Rotate {

@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Function handles logic of turn light on command
 func (md *MidiDevice) turnLightOn(cmd model.TurnLightOnCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	msg, _ := backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.On)
 	if msg != nil && md.ports.out != nil {
@@ -13,6 +14,7 @@ func (md *MidiDevice) turnLightOn(cmd model.TurnLightOnCommand, backlightConfig 
 	}
 }
 
+// Function handles logic of turn light off command
 func (md *MidiDevice) turnLightOff(cmd model.TurnLightOffCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	msg, _ := backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.Off)
 	if msg != nil && md.ports.out != nil {
@@ -20,6 +22,7 @@ func (md *MidiDevice) turnLightOff(cmd model.TurnLightOffCommand, backlightConfi
 	}
 }
 
+// Function handles logic of single blink command
 func (md *MidiDevice) singleBlink(cmd model.SingleBlinkCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) {
 	backlightTimeOffset := time.Duration(backlightConfig.DeviceBacklightTimeOffset[md.name])
 	msg, _ := backlightConfig.TurnLight(md.name, byte(cmd.KeyCode), cmd.ColorName, backlight.On)
@@ -33,6 +36,7 @@ func (md *MidiDevice) singleBlink(cmd model.SingleBlinkCommand, backlightConfig 
 	}
 }
 
+// Function handles logic of single reversed blink command
 func (md *MidiDevice) singleReversedBlink(
 	cmd model.SingleReversedBlinkCommand,
 	backlightConfig *backlight.DecodedDeviceBacklightConfig,
@@ -49,6 +53,7 @@ func (md *MidiDevice) singleReversedBlink(
 	}
 }
 
+// Function handles logic of changing active namespace for device
 func (md *MidiDevice) setActiveNamespace(
 	cmd model.SetActiveNamespaceCommand,
 	_ *backlight.DecodedDeviceBacklightConfig,
@@ -58,6 +63,7 @@ func (md *MidiDevice) setActiveNamespace(
 	md.sendNamespaceChangedSignal(md.signals, oldNamespace, cmd.Namespace)
 }
 
+// Function handles logic of turning light for range of keys of single MIDI-device
 func (md *MidiDevice) turnLightKeyRange(
 	config *backlight.DecodedDeviceBacklightConfig,
 	left, right byte,
@@ -75,6 +81,7 @@ func (md *MidiDevice) turnLightKeyRange(
 	}
 }
 
+// Function handles startup illumination for MIDI-device
 func (md *MidiDevice) startupIllumination(config *backlight.DecodedDeviceBacklightConfig) {
 	time.Sleep(md.startupDelay)
 	backlightTimeOffset := time.Duration(config.DeviceBacklightTimeOffset[md.name])

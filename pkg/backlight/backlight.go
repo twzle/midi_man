@@ -4,6 +4,7 @@ import (
 	"errors"
 )
 
+// Function contains logic to perform backlight operations with MIDI-devices using backlight configuration
 func (db *DecodedDeviceBacklightConfig) TurnLight(deviceAlias string, key byte, color string, status StatusName) ([]byte, error) {
 	mapping, values := db.FindArguments(deviceAlias, key, color, status)
 

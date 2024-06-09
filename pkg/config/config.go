@@ -5,13 +5,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Default reconnect interval time
 const MinReconnectIntervalMs = 1000
 
+// Representation of configurtaion for trigger values used by set of controls
 type TriggerValues struct {
 	Increment int `json:"increment" yaml:"increment"`
 	Decrement int `json:"decrement" yaml:"decrement"`
 }
 
+// Representation of configurtaion for single set of controls
 type Controls struct {
 	Keys         []int         `json:"keys" yaml:"keys"`
 	Rotate       bool          `json:"rotate" yaml:"rotate"`
@@ -20,6 +23,7 @@ type Controls struct {
 	Triggers     TriggerValues `json:"triggers" yaml:"triggers"`
 }
 
+// Representation of single device configurtaion
 type DeviceConfig struct {
 	DeviceName        string     `json:"device_name" yaml:"device_name"`
 	StartupDelay      int        `json:"startup_delay" yaml:"startup_delay"`
@@ -31,10 +35,12 @@ type DeviceConfig struct {
 	BlinkingPeriodMS  int        `json:"blinking_period_ms" yaml:"blinking_period_ms"`
 }
 
+// Representation of user configurtaion
 type UserConfig struct {
 	MidiDevices []DeviceConfig `json:"midi_devices" yaml:"midi_devices"`
 }
 
+// Function validating the contents of user configuration
 func (conf *UserConfig) Validate() error {
 	if len(conf.MidiDevices) == 0 {
 		fmt.Println("MIDI devices were not found in configuration file")
@@ -89,6 +95,8 @@ func (conf *UserConfig) Validate() error {
 	return nil
 }
 
+
+// Function seraching duplicate device name in array of configured MIDI-devices
 func (conf *UserConfig) hasDuplicateDevices() (string, bool) {
 	x := make(map[string]struct{})
 
@@ -102,6 +110,7 @@ func (conf *UserConfig) hasDuplicateDevices() (string, bool) {
 	return "", false
 }
 
+// Function deserealizing user configuration
 func ParseConfigFromBytes(data []byte) (*UserConfig, error) {
 	cfg := UserConfig{}
 

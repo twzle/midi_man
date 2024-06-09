@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Function writes signals to provided channel for device entity
 func (md *MidiDevice) sendSignals(signals []core.Signal) {
 	for _, signal := range signals {
 		if signal != nil {
@@ -18,6 +19,7 @@ func (md *MidiDevice) sendSignals(signals []core.Signal) {
 	}
 }
 
+// Function processing signals from MIDI-device
 func (md *MidiDevice) processMidiMessage(msg midi.Message, _ int32) {
 	md.mutex.Lock()
 	var channel, key, velocity uint8
@@ -52,6 +54,8 @@ func (md *MidiDevice) processMidiMessage(msg midi.Message, _ int32) {
 	md.sendSignals(md.messageToSignal())
 }
 
+
+// Function converts message to hubman-compatible signal
 func (md *MidiDevice) messageToSignal() []core.Signal {
 	md.mutex.Lock()
 	defer md.mutex.Unlock()
@@ -116,6 +120,7 @@ func (md *MidiDevice) messageToSignal() []core.Signal {
 	return signalSequence
 }
 
+// Function listening singals from single MIDI-device
 func (md *MidiDevice) listen() {
 	stopMidiListener := func() {}
 	for {

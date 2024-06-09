@@ -15,6 +15,7 @@ import (
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 )
 
+// Application entry point
 func main() {
 	defer midi.CloseDriver()
 
@@ -29,6 +30,7 @@ func main() {
 	setupApp(systemConfig, userConfig)
 }
 
+// Function with initialization of application core with configuration data. Ends with termination of process.
 func setupApp(systemConfig *core.SystemConfig, userConfig *config.UserConfig) {
 	agentConf := core.AgentConfiguration{
 		System:          systemConfig,

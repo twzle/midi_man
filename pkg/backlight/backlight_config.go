@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Function initializing backlight configuration from YAML-compatible text file
 func InitConfig(confPath string) (*DecodedDeviceBacklightConfig, error) {
 	file, err := os.ReadFile(confPath)
 	if err != nil {
@@ -14,6 +15,7 @@ func InitConfig(confPath string) (*DecodedDeviceBacklightConfig, error) {
 	return cfg, err
 }
 
+// Function deserealizing backlight configuration
 func ParseConfigFromBytes(data []byte) (*DecodedDeviceBacklightConfig, error) {
 	cfg := RawBacklightConfig{}
 
