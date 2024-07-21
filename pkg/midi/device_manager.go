@@ -16,13 +16,13 @@ type DeviceManager struct {
 	devices         map[string]*MidiDevice
 	mutex           sync.Mutex
 	signals         chan core.Signal
-	backlightConfig *backlight.DecodedDeviceBacklightConfig
+	backlightConfig *backlight.DeviceBacklightConfig
 	logger          *zap.Logger
 	checkManager    core.CheckRegistry
 }
 
 // Function sets current backlight configuration for devices
-func (dm *DeviceManager) SetBacklightConfig(cfg *backlight.DecodedDeviceBacklightConfig) {
+func (dm *DeviceManager) SetBacklightConfig(cfg *backlight.DeviceBacklightConfig) {
 	dm.backlightConfig = cfg
 }
 

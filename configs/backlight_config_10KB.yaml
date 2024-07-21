@@ -1,0 +1,360 @@
+device_light_configuration:
+  - device_name: FL STUDIO FIRE
+    backlight_time_offset: 15
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F 00 00
+          - color_name: green
+            payload: 00 7F 00
+          - color_name: blue
+            payload: 00 00 7F
+          - color_name: yellow
+            payload: 7F 7F 00
+          - color_name: orange
+            payload: 7F 1F 00
+          - color_name: mint
+            payload: 1F 7F 4F
+          - color_name: cyan
+            payload: 00 7F 7F
+          - color_name: magenta
+            payload: 7F 00 7F
+          - color_name: violet
+            payload: 1F 1F 7F
+          - color_name: pink
+            payload: 7F 1F 1F
+          - color_name: white
+            payload: 7F 7F 7F
+          - color_name: black
+            payload: 00 00 00
+        off:
+          - color_name: light_red
+            payload: 04 00 00
+          - color_name: light_green
+            payload: 00 04 00
+          - color_name: light_blue
+            payload: 00 00 04
+          - color_name: light_yellow
+            payload: 04 04 00
+          - color_name: light_orange
+            payload: 0C 04 00
+          - color_name: light_mint
+            payload: 04 0C 04
+          - color_name: light_cyan
+            payload: 00 04 04
+          - color_name: light_magenta
+            payload: 04 00 04
+          - color_name: light_violet
+            payload: 04 04 0C
+          - color_name: light_pink
+            payload: 0C 04 04
+          - color_name: light_white
+            payload: 04 04 04
+          - color_name: black
+            payload: 00 00 00
+      - color_space_id: 2
+        on:
+          - color_name: red
+            payload: '02'
+        off:
+          - color_name: light_red
+            payload: '01'
+      - color_space_id: 3
+        on:
+          - color_name: green
+            payload: '02'
+        off:
+          - color_name: light_green
+            payload: '01'
+      - color_space_id: 4
+        on:
+          - color_name: yellow
+            payload: '02'
+        off:
+          - color_name: light_yellow
+            payload: '01'
+      - color_space_id: 5
+        on:
+          - color_name: yellow
+            payload: '03'
+          - color_name: red
+            payload: '04'
+        off:
+          - color_name: light_yellow
+            payload: '01'
+          - color_name: light_red
+            payload: '02'
+      - color_space_id: 6
+        on:
+          - color_name: yellow
+            payload: '03'
+          - color_name: green
+            payload: '04'
+        off:
+          - color_name: light_yellow
+            payload: '01'
+          - color_name: light_green
+            payload: '02'
+      - color_space_id: 7
+        on:
+          - color_name: red
+            payload: '03'
+          - color_name: green
+            payload: '04'
+        off:
+          - color_name: black
+            payload: '00'
+          - color_name: light_red
+            payload: '01'
+          - color_name: light_green
+            payload: '02'
+      - color_space_id: 8
+        on:
+          - color_name: channel
+            payload: '00'
+          - color_name: mixer
+            payload: '01'
+          - color_name: user1
+            payload: '02'
+          - color_name: user2
+            payload: '03'
+        off:
+          - color_name: channel
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 54
+          - 69
+        key_number_shift: 54
+        color_space: 1
+        statuses:
+          on:
+            type: Sysex
+            fallback_color: white
+            bytes: F0 47 7F 43 65 00 04 %key %payload F7
+          off:
+            type: Sysex
+            fallback_color: light_white
+            bytes: F0 47 7F 43 65 00 04 %key %payload F7
+      - key_range:
+          - 70
+          - 85
+        key_number_shift: 54
+        color_space: 1
+        statuses:
+          on:
+            type: Sysex
+            fallback_color: white
+            bytes: F0 47 7F 43 65 00 04 %key %payload F7
+          off:
+            type: Sysex
+            fallback_color: light_white
+            bytes: F0 47 7F 43 65 00 04 %key %payload F7
+      - key_range:
+          - 86
+          - 117
+        key_number_shift: 54
+        color_space: 1
+        statuses:
+          on:
+            type: Sysex
+            fallback_color: white
+            bytes: F0 47 7F 43 65 00 04 %key %payload F7
+          off:
+            type: Sysex
+            fallback_color: light_white
+            bytes: F0 47 7F 43 65 00 04 %key %payload F7
+      - key_range:
+          - 31
+          - 35
+        key_number_shift: 0
+        color_space: 2
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: red
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: light_red
+            bytes: B0 %key %payload
+      - key_range:
+          - 36
+          - 39
+        key_number_shift: 0
+        color_space: 3
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: green
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: light_green
+            bytes: B0 %key %payload
+      - key_range:
+          - 49
+          - 49
+        key_number_shift: 0
+        color_space: 4
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: yellow
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: light_yellow
+            bytes: B0 %key %payload
+      - key_range:
+          - 52
+          - 52
+        key_number_shift: 0
+        color_space: 4
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: yellow
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: light_yellow
+            bytes: B0 %key %payload
+      - key_range:
+          - 44
+          - 48
+        key_number_shift: 0
+        color_space: 5
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: yellow
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: light_yellow
+            bytes: B0 %key %payload
+      - key_range:
+          - 53
+          - 53
+        key_number_shift: 0
+        color_space: 5
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: red
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: light_red
+            bytes: B0 %key %payload
+      - key_range:
+          - 50
+          - 51
+        key_number_shift: 0
+        color_space: 6
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: yellow
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: light_yellow
+            bytes: B0 %key %payload
+      - key_range:
+          - 40
+          - 43
+        key_number_shift: 0
+        color_space: 7
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: red
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: black
+            bytes: B0 %key %payload
+      - key_range:
+          - 27
+          - 27
+        key_number_shift: 0
+        color_space: 8
+        statuses:
+          on:
+            type: ControlChange
+            fallback_color: channel
+            bytes: B0 %key %payload
+          off:
+            type: ControlChange
+            fallback_color: channel
+            bytes: B0 %key %payload
+  - device_name: TY HD 500 Switcher
+    backlight_time_offset: 50
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 67
+          - 74
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+      - key_range:
+            - 80
+            - 87
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload        
+      - key_range:
+          - 97
+          - 102
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+      - key_range:
+          - 31
+          - 33
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
