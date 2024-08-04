@@ -1,5 +1,5 @@
 device_light_configuration:
-  - device_name: Arduino_1_2
+  - device_name: Arduino_1
     backlight_time_offset: 100
     color_spaces:
       - color_space_id: 1
@@ -49,7 +49,7 @@ device_light_configuration:
             type: NoteOff
             fallback_color: black
             bytes: 80 %key %payload
-  - device_name: Arduino_1_3
+  - device_name: Arduino_2
     backlight_time_offset: 100
     color_spaces:
       - color_space_id: 1
@@ -74,7 +74,7 @@ device_light_configuration:
             type: NoteOff
             fallback_color: black
             bytes: 80 %key %payload
-  - device_name: Arduino_1_1
+  - device_name: Arduino_3
     backlight_time_offset: 100
     color_spaces:
       - color_space_id: 1

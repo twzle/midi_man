@@ -1,5 +1,5 @@
 device_light_configuration:
-  - device_name: Arduino
+  - device_name: Arduino_1
     backlight_time_offset: 100
     color_spaces:
       - color_space_id: 1
