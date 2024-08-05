@@ -1,6 +1,6 @@
 # Midi Manipulator
 
-## User config
+## Domain-specific declarative language specification for configuration of MIDI-device controls
 
 ### Иерархия
 ```
@@ -136,7 +136,7 @@ lsusb -v 2>&1 | grep -e iProduct
    
 Описание: Значение полученное с устройства при котором происходит инкрементация/декрементация текущего значения velocity.
 
-## Backlight config
+## Domain-specific declarative language specification for backlight configuration of MIDI devices
 
 ### Иерархия
 ```
