@@ -51,7 +51,7 @@ type blinkingKey struct {
 	keyCode         int
 	OnColorName     string
 	OffColorName    string
-	backlightConfig *backlight.DecodedDeviceBacklightConfig
+	backlightConfig *backlight.DeviceBacklightConfig
 }
 
 // Representation of MIDI-ports entity
@@ -66,7 +66,7 @@ func (md *MidiDevice) GetAlias() string {
 }
 
 // Function executes command on MIDI-device
-func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
+func (md *MidiDevice) ExecuteCommand(command model.MidiCommand, backlightConfig *backlight.DeviceBacklightConfig) error {
 	md.mutex.Lock()
 	defer md.mutex.Unlock()
 
@@ -108,7 +108,7 @@ func (md *MidiDevice) Stop() {
 }
 
 // Function initialized working process for MIDI-device
-func (md *MidiDevice) RunDevice(backlightConfig *backlight.DecodedDeviceBacklightConfig) {
+func (md *MidiDevice) RunDevice(backlightConfig *backlight.DeviceBacklightConfig) {
 	time.Sleep(md.startupDelay)
 	go md.reconnect(backlightConfig)
 	go md.listen()
@@ -116,7 +116,7 @@ func (md *MidiDevice) RunDevice(backlightConfig *backlight.DecodedDeviceBackligh
 }
 
 // Function initializes connection with MIDI-device connected through system
-func (md *MidiDevice) initConnection(backlightConfig *backlight.DecodedDeviceBacklightConfig) error {
+func (md *MidiDevice) initConnection(backlightConfig *backlight.DeviceBacklightConfig) error {
 	md.mutex.Lock()
 	defer md.mutex.Unlock()
 
@@ -130,7 +130,7 @@ func (md *MidiDevice) initConnection(backlightConfig *backlight.DecodedDeviceBac
 }
 
 // Function contains logic of reconnect to MIDI-device through system with specified time interval
-func (md *MidiDevice) reconnect(backlightConfig *backlight.DecodedDeviceBacklightConfig) {
+func (md *MidiDevice) reconnect(backlightConfig *backlight.DeviceBacklightConfig) {
 	ticker := time.NewTicker(md.reconnectInterval)
 	for {
 		select {

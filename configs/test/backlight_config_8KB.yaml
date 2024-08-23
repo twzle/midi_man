@@ -1,0 +1,326 @@
+device_light_configuration:
+  - device_name: Arduino_1
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_2
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_3
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_4
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_5
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_6
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_7
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_8
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_9
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_10
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_11
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_12
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
+  - device_name: Arduino_13
+    backlight_time_offset: 100
+    color_spaces:
+      - color_space_id: 1
+        on:
+          - color_name: red
+            payload: 7F
+        off:
+          - color_name: black
+            payload: '00'
+    keyboard_backlight:
+      - key_range:
+          - 0
+          - 15
+        key_number_shift: 0
+        color_space: 1
+        statuses:
+          on:
+            type: NoteOn
+            fallback_color: red
+            bytes: 90 %key %payload
+          off:
+            type: NoteOff
+            fallback_color: black
+            bytes: 80 %key %payload
